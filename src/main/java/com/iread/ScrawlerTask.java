@@ -15,9 +15,10 @@ public class ScrawlerTask implements Runnable {
     private ConfMan conf;
     private Spider spider;
 
-    public ScrawlerTask(ConfMan conf) {
+    public ScrawlerTask(ConfMan conf, Spider spider) {
         this.conf = conf;
         this.searchRounds = 1;
+        this.spider = spider;
     }
 
     public void run() {

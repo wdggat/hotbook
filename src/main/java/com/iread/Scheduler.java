@@ -3,6 +3,7 @@ package com.iread;
 import java.util.concurrent.*;
 
 import com.iread.conf.ConfMan;
+import com.iread.spider.AmazonSpider;
 import com.iread.spider.Spider;
 import org.apache.log4j.Logger;
 
@@ -21,7 +22,8 @@ public class Scheduler {
     }
     
     public void startToWork() {
-        startToWork(new ScrawlerTask(conf));
+        Spider spider = new AmazonSpider();
+        startToWork(new ScrawlerTask(conf, spider));
     }
 
     public void startToWork(Runnable task) {

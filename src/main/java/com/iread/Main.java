@@ -14,7 +14,7 @@ public class Main {
 
     private static ConfMan conf;
 
-    private static void scheduleScrawlers(String weiboSource) {
+    private static void scheduleScrawlers() {
         Scheduler scheduler = new Scheduler(conf);
         scheduler.startToWork();
     }
@@ -25,5 +25,11 @@ public class Main {
 
     public static void main(String args[]) {
         PropertyConfigurator.configure(conf.DEFAULT_CONF_PATH);
+        String command = args[1];
+        if(command.equals("start")) {
+            scheduleScrawlers();
+        } else {
+            printHelp();
+        }
     }
 }
