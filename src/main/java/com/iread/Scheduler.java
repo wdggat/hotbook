@@ -2,6 +2,7 @@ package com.iread;
 
 import java.util.concurrent.*;
 
+import com.iread.bean.Species;
 import com.iread.conf.ConfMan;
 import com.iread.spider.AmazonSpider;
 import com.iread.spider.Spider;
@@ -13,16 +14,21 @@ public class Scheduler {
     private final ScheduledExecutorService scheduler;
     private final int initialDelay;
     private static ConfMan conf;
+    private Species species;
     private static final int NUM_THREADS = 1;
 
-    Scheduler(ConfMan conf) {
+    Scheduler(ConfMan conf, Species species) {
         this.initialDelay = conf.getInitDelay();
         this.conf = conf;
+        this.species = species;
         scheduler = Executors.newScheduledThreadPool(NUM_THREADS);
     }
     
     public void startToWork() {
-        Spider spider = new AmazonSpider();
+        Spider spider = null;
+        if (species.equals(Species.AMAZON)) {
+            spider = new AmazonSpider(conf);
+        }
         startToWork(new ScrawlerTask(conf, spider));
     }
 

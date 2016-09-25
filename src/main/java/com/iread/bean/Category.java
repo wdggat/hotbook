@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSON;
 /**
  * Created by liu on 16/9/19.
  */
-public class Category {
+public class Category extends Storable{
     private Species species;
     /**
      * 类目种类，普通图书分类:0 畅销榜: 1
@@ -34,6 +34,8 @@ public class Category {
     private String cat1name;
     private String cat2name;
     private String cat3name;
+
+    public Category() {}
 
     public Category(Species species, int type, String name, String parent, String url, int amount, int level) {
         this.species = species;
@@ -133,8 +135,24 @@ public class Category {
         this.cat3name = cat3name;
     }
 
+    public String getCatFullName() {
+        return cat1name + cat2name + cat3name;
+    }
+
     @Override
     public String toString() {
         return JSON.toJSONString(this);
+    }
+
+    public String getStoreFilename() {
+        String filename = null;
+        if (cat2name == null) {
+            filename = "cat_" + species + "_" + cat1name;
+        } else if (cat3name == null) {
+            filename = "cat_" + species + "_" + cat1name + "_" + cat2name;
+        } else {
+            filename = "cat_" + species + "_" + cat1name + "_" + cat2name + "_" + cat3name;
+        }
+        return filename;
     }
 }

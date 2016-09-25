@@ -1,5 +1,6 @@
 package com.iread;
 
+import com.iread.bean.Species;
 import com.iread.conf.ConfMan;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -14,8 +15,8 @@ public class Main {
 
     private static ConfMan conf;
 
-    private static void scheduleScrawlers() {
-        Scheduler scheduler = new Scheduler(conf);
+    private static void scheduleScrawlers(Species species) {
+        Scheduler scheduler = new Scheduler(conf, species);
         scheduler.startToWork();
     }
 
@@ -25,9 +26,11 @@ public class Main {
 
     public static void main(String args[]) {
         PropertyConfigurator.configure(conf.DEFAULT_CONF_PATH);
-        String command = args[1];
+        String speciesName = args[1];
+        String command = args[2];
+        Species species = Species.getFromName(speciesName);
         if(command.equals("start")) {
-            scheduleScrawlers();
+            scheduleScrawlers(species);
         } else {
             printHelp();
         }
