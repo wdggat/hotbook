@@ -17,6 +17,7 @@ public class BookPreview extends Storable{
     private Float star;
     private int voteNum;
     private int order;
+    private Category category;
 
     public BookPreview(Species species, int order, String asin, String title, String onloadTime, String kindleUrl, String paperbackUrl, String hardbackUrl, String price, Float star, int voteNum) {
         this.species = species;
@@ -120,6 +121,14 @@ public class BookPreview extends Storable{
         this.price = price;
     }
 
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
     @Override
     public String toString() {
         return JSON.toJSONString(this);
@@ -127,7 +136,7 @@ public class BookPreview extends Storable{
 
     @Override
     public String getStoreFilename() {
-        return "bp_" + species + "_" + title + "_" + asin;
+        return "book_" + species + "_" + title + "_" + asin;
     }
 
     /**
@@ -142,6 +151,17 @@ public class BookPreview extends Storable{
             return paperbackUrl;
         } else if(kindleUrl != null) {
             return kindleUrl;
+        }
+        return null;
+    }
+
+    public WrapType getTopWrapType() {
+        if(hardbackUrl != null) {
+            return WrapType.HARDBACK;
+        } else if(paperbackUrl != null) {
+            return WrapType.PAPERBACK;
+        } else if(kindleUrl != null) {
+            return WrapType.KINDLE;
         }
         return null;
     }

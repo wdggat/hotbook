@@ -67,7 +67,7 @@ public class AmazonSpiderTest {
 
     @Test
     public void testFetchBook() {
-        String url = "";
+        String url = "https://www.amazon.cn/%E9%AD%94%E9%AC%BC%E7%BB%8F%E6%B5%8E%E5%AD%A6%E7%B3%BB%E5%88%97-%E5%8F%B2%E8%92%82%E8%8A%AC%C2%B7%E5%88%97%E7%BB%B4%E7%89%B9/dp/B01KV0D9OW/ref=sr_1_3?s=books&ie=UTF8&qid=1474475789&sr=1-3";
         Book book = amazonSpider.fetchBook(url);
         Assert.assertTrue(book != null);
     }

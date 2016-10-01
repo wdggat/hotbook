@@ -28,11 +28,11 @@ public abstract class Spider {
         return Jsoup.parse(content);
     }
 
-    protected static Document fetchDocument(Storable storable) throws IOException {
+    protected Document fetchDocument(Storable storable) throws IOException {
         String path = conf.getWarehouse(storable.getSpecies()) + "/" + storable.getStoreFilename();
         File storeFile = new File(path);
         // 文件不存在或已过期
-        if(!storeFile.exists() || (System.currentTimeMillis() - storeFile.lastModified()) / 86400 >= conf.getShelflife()) {
+        if(!storeFile.exists() || expired(storeFile)) {
             String html = clientVM.get(storable.getUrl());
             FileUtils.write(storeFile, html, false);
             return Jsoup.parse(html);
@@ -40,13 +40,17 @@ public abstract class Spider {
         return Jsoup.parse(storeFile, "UTF-8");
     }
 
-    protected static String getHrefInElement(Element el) {
+    protected boolean expired(File file) {
+        return (System.currentTimeMillis() - file.lastModified()) / 86400 >= conf.getShelflife();
+    }
+
+    protected String getHrefInElement(Element el) {
         String html = el.toString();
         String url = StringUtils.substringBetween(html, "href=\"", "\"");
         return url.replaceAll("amp;", "");
     }
 
-    protected static String getSquareSortUrlFromDoc(Document document) {
+    protected String getSquareSortUrlFromDoc(Document document) {
         Element squareSortEl = document.getElementsByAttributeValue("title", "图像视图").first();
         String squareSortUrl = getHrefInElement(squareSortEl);
         return squareSortUrl;

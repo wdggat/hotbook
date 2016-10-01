@@ -2,6 +2,7 @@ package com.iread.spider;
 
 import com.iread.bean.*;
 import com.iread.conf.ConfMan;
+import com.iread.util.AmazonBookParser;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
@@ -196,6 +197,7 @@ public class AmazonSpider extends Spider {
                 voteNum = Integer.parseInt(reviewEls.last().text().replace(",", ""));
             }
             BookPreview bookPreview = new BookPreview(Species.AMAZON, order, asin, title, onloadTime, kindleUrl, paperbackUrl, hardbackUrl, price, star, voteNum);
+            bookPreview.setCategory(category);
             bookPreviews.add(bookPreview);
             order ++;
             logger.debug("Got book preview: " + bookPreview.toString());
@@ -203,8 +205,24 @@ public class AmazonSpider extends Spider {
         return bookPreviews;
     }
 
-    public Book fetchBook(String url) {
+    public Book fetchBook(BookPreview bookPreview) throws IOException {
+        Document document = fetchDocument(bookPreview);
         Book book = new Book();
+        book.setSpecies(Species.AMAZON);
+        book.setTitle(bookPreview.getTitle());
+        book.setWrapType(bookPreview.getTopWrapType());
+        Element titleEl = document.getElementById("title");
+        book.setOnloadDate(AmazonBookParser.getDate(titleEl));
+        ArrayList<String> authors = AmazonBookParser.getAuthors(document, "作者");
+        ArrayList<String> translators = AmazonBookParser.getAuthors(document, "译");
+        book.setAuthor(authors);
+        book.setTranslator(translators);
+        book.setStar(bookPreview.getStar());
+        book.setCommentNum(bookPreview.getVoteNum());
+        book.setCategory(bookPreview.getCategory());
+        book.setPrice(AmazonBookParser.getPrice(document));
+        book.setSeller(AmazonBookParser.getSeller(document));
+        book.setDescription(AmazonBookParser.getBookDesc(document));
         //TODO
         return book;
     }
