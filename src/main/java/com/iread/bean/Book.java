@@ -18,8 +18,10 @@ public class Book {
     private String seller;
     private double price;
     private String description;
-    private String poster;
-    private List<Suggest> suggests;
+    private String imgUrl;
+    private List<Suggest> buyTogether;
+    private List<Suggest> alsoBuy;
+    private List<Suggest> visitorBuy;
     private String publisher;
     private int pageNum;
     private String language;
@@ -28,19 +30,19 @@ public class Book {
     private String barcode;
     private double length;
     private double width;
-    private double thickness;
+    private double height;
     private double weight;
     private String brand;
     private String asin;
-    private int orderAll;
-    private Map<Category, Integer> orderCats;
+    private int rankAll;
+    private Map<Category, Integer> rankCats;
     private String editorSuggest;
     private String mediaSuggest;
     private String authorIntro;
     private String catalog;
     private String preface;
     private String digest;
-    private Map<Integer, Integer> starGroups;
+    private ArrayList<Integer> starGroups; //5星，4星，...
     private List<Comment> comments;
 
     public Species getSpecies() {
@@ -139,20 +141,36 @@ public class Book {
         this.description = description;
     }
 
-    public String getPoster() {
-        return poster;
+    public String getImgUrl() {
+        return imgUrl;
     }
 
-    public void setPoster(String poster) {
-        this.poster = poster;
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
     }
 
-    public List<Suggest> getSuggests() {
-        return suggests;
+    public List<Suggest> getBuyTogether() {
+        return buyTogether;
     }
 
-    public void setSuggests(List<Suggest> suggests) {
-        this.suggests = suggests;
+    public void setBuyTogether(List<Suggest> buyTogether) {
+        this.buyTogether = buyTogether;
+    }
+
+    public List<Suggest> getAlsoBuy() {
+        return alsoBuy;
+    }
+
+    public void setAlsoBuy(List<Suggest> alsoBuy) {
+        this.alsoBuy = alsoBuy;
+    }
+
+    public List<Suggest> getVisitorBuy() {
+        return visitorBuy;
+    }
+
+    public void setVisitorBuy(List<Suggest> visitorBuy) {
+        this.visitorBuy = visitorBuy;
     }
 
     public String getPublisher() {
@@ -219,12 +237,12 @@ public class Book {
         this.width = width;
     }
 
-    public double getThickness() {
-        return thickness;
+    public double getHeight() {
+        return height;
     }
 
-    public void setThickness(double thickness) {
-        this.thickness = thickness;
+    public void setHeight(double height) {
+        this.height = height;
     }
 
     public double getWeight() {
@@ -251,20 +269,20 @@ public class Book {
         this.asin = asin;
     }
 
-    public int getOrderAll() {
-        return orderAll;
+    public int getRankAll() {
+        return rankAll;
     }
 
-    public void setOrderAll(int orderAll) {
-        this.orderAll = orderAll;
+    public void setRankAll(int rankAll) {
+        this.rankAll = rankAll;
     }
 
-    public Map<Category, Integer> getOrderCats() {
-        return orderCats;
+    public Map<Category, Integer> getRankCats() {
+        return rankCats;
     }
 
-    public void setOrderCats(Map<Category, Integer> orderCats) {
-        this.orderCats = orderCats;
+    public void setRankCats(Map<Category, Integer> rankCats) {
+        this.rankCats = rankCats;
     }
 
     public String getEditorSuggest() {
@@ -315,11 +333,11 @@ public class Book {
         this.digest = digest;
     }
 
-    public Map<Integer, Integer> getStarGroups() {
+    public ArrayList<Integer> getStarGroups() {
         return starGroups;
     }
 
-    public void setStarGroups(Map<Integer, Integer> starGroups) {
+    public void setStarGroups(ArrayList<Integer> starGroups) {
         this.starGroups = starGroups;
     }
 

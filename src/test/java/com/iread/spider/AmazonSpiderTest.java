@@ -12,6 +12,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -58,17 +59,28 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBookPreviews_url() {
-        String url = "https://www.amazon.cn/s/ref=lp_658495051_il_ti_stripbooks?rh=n%3A658390051%2Cn%3A%21658391051%2Cn%3A658393051%2Cn%3A658495051&ie=UTF8&qid=1474476399&lo=stripbooks&page=15";
+    public void testFetchBookPreviews_url()  throws IOException {
+        String url = "https://www.amazon.cn/s/ref=lp_658495051_il_ti_stripbooks?rh=n%3A658390051%2Cn%3A%21658391051%2Cn%3A658393051%2Cn%3A658495051&ie=UTF8&qid=1474476399&lo=stripbooks";
         int orderBegin = (15 - 1) * conf.getAmazonBooknumPerSquareSortPage();
-        ArrayList<BookPreview> previews = amazonSpider.fetchBookPreviews(url, orderBegin);
+        Category category = new Category();
+        category.setUrl(url);
+        ArrayList<BookPreview> previews = amazonSpider.fetchBookPreviews(category, 15);
         Assert.assertEquals(conf.getAmazonBooknumPerSquareSortPage(), previews.size());
     }
 
     @Test
-    public void testFetchBook() {
+    public void testFetchBook_paperback() throws IOException {
         String url = "https://www.amazon.cn/%E9%AD%94%E9%AC%BC%E7%BB%8F%E6%B5%8E%E5%AD%A6%E7%B3%BB%E5%88%97-%E5%8F%B2%E8%92%82%E8%8A%AC%C2%B7%E5%88%97%E7%BB%B4%E7%89%B9/dp/B01KV0D9OW/ref=sr_1_3?s=books&ie=UTF8&qid=1474475789&sr=1-3";
-        Book book = amazonSpider.fetchBook(url);
+        BookPreview bookPreview = new BookPreview(Species.AMAZON, 1, "", "", "", "", url, "", "", 0f, 0);
+        Book book = amazonSpider.fetchBook(bookPreview);
+        Assert.assertTrue(book != null);
+    }
+
+    @Test
+    public void testFetchBook_kindle() throws IOException {
+        String url = "https://www.amazon.cn/dp/B0151E1R06/ref=tmm_kin_swatch_0?_encoding=UTF8&qid=&sr=";
+        BookPreview bookPreview = new BookPreview(Species.AMAZON, 1, "", "", url, "", "", "", "", 0f, 0);
+        Book book = amazonSpider.fetchBook(bookPreview);
         Assert.assertTrue(book != null);
     }
 }

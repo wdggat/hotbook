@@ -4,19 +4,15 @@ package com.iread.bean;
  * Created by liu on 16/9/30.
  */
 public class Suggest {
-    private String picture;
     private String title;
     private String author;
     private WrapType wrapType;
     private double price;
-
-    public String getPicture() {
-        return picture;
-    }
-
-    public void setPicture(String picture) {
-        this.picture = picture;
-    }
+    private String imgUrl;
+    private  double star;
+    private int commentNum;
+    private String url;
+    private SuggestType suggestType;
 
     public String getTitle() {
         return title;
@@ -48,5 +44,45 @@ public class Suggest {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
+    }
+
+    public double getStar() {
+        return star;
+    }
+
+    public void setStar(double star) {
+        this.star = star;
+    }
+
+    public int getCommentNum() {
+        return commentNum;
+    }
+
+    public void setCommentNum(int commentNum) {
+        this.commentNum = commentNum;
+    }
+
+    public SuggestType getSuggestType() {
+        return suggestType;
+    }
+
+    public void setSuggestType(SuggestType suggestType) {
+        this.suggestType = suggestType;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

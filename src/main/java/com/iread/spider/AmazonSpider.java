@@ -2,7 +2,7 @@ package com.iread.spider;
 
 import com.iread.bean.*;
 import com.iread.conf.ConfMan;
-import com.iread.util.AmazonBookParser;
+import com.iread.parser.AmazonBookParser;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
@@ -53,7 +53,7 @@ public class AmazonSpider extends Spider {
                                 catLevel3.setCat2name(catLevel2.getCat2name());
                                 catLevel3.setCat3name(catLevel3.getName());
                                 Document level3Doc = fetchDocument(catLevel3);
-                                String squareSortUrl = getSquareSortUrlFromDoc(level3Doc);
+                                String squareSortUrl = AmazonBookParser.getSquareSortUrlFromDoc(level3Doc);
                                 catLevel3.setUrl(squareSortUrl);
                             }
                         }
@@ -73,7 +73,7 @@ public class AmazonSpider extends Spider {
         Element specialCategoryEl = document.getElementsByAttributeValue("role", "directory").first();
 //        String homeCat = StringUtils.substringBetween(specialCategoryEl.html(), "<h2 style=\\\"\\\">", "</h2>");
         for(Element el : specialCategoryEl.getElementsByTag("li")) {
-            String url = getHrefInElement(el);
+            String url = AmazonBookParser.getHrefInElement(el);
             String name = el.text();
             Category cat = new Category(Species.AMAZON, Category.TYPE_HOT, name, "", HOST + url, 0, 1);
             categories.add(cat);
@@ -91,7 +91,7 @@ public class AmazonSpider extends Spider {
         if (rootCat.getType() == Category.TYPE_NORMAL) {
             logger.info("SubCat's url: " + rootCat.getName() + ", " + rootCat.getUrl());
             Document document = fetchDocument(rootCat);
-            String squareSortUrl = getSquareSortUrlFromDoc(document);
+            String squareSortUrl = AmazonBookParser.getSquareSortUrlFromDoc(document);
             rootCat.setUrl(squareSortUrl);
 //            logger.debug("---------------------------- documents --------------------------------- \n" + document.html());
             ArrayList<Category> subLevels = parseLeftCategorySections(document, rootCat.getName(), rootCat.getLevel() + 1);
@@ -118,7 +118,7 @@ public class AmazonSpider extends Spider {
             if(!el.html().contains("narrowValue")) {
                 continue;
             }
-            String url = getHrefInElement(el);
+            String url = AmazonBookParser.getHrefInElement(el);
             String name = el.getElementsByAttributeValue("class", "refinementLink").text();
             String amountStr = el.getElementsByAttributeValue("class", "narrowValue").text();
             int amount = Integer.parseInt(StringUtils.substringBetween(amountStr, "(", ")").replace(",", ""));
@@ -177,11 +177,11 @@ public class AmazonSpider extends Spider {
             String kindleUrl = null,paperbackUrl = null,hardbackUrl = null;
             for(Element el : linkEl.select("a")) {
                 if(el.text().contains("电子书")) {
-                    kindleUrl = getHrefInElement(el);
+                    kindleUrl = AmazonBookParser.getHrefInElement(el);
                 } else if(el.text().contains("平装")) {
-                    paperbackUrl = getHrefInElement(el);
+                    paperbackUrl = AmazonBookParser.getHrefInElement(el);
                 } else if(el.text().contains("精装")) {
-                    hardbackUrl = getHrefInElement(el);
+                    hardbackUrl = AmazonBookParser.getHrefInElement(el);
                 }
             }
             float star = 0;
@@ -223,7 +223,66 @@ public class AmazonSpider extends Spider {
         book.setPrice(AmazonBookParser.getPrice(document));
         book.setSeller(AmazonBookParser.getSeller(document));
         book.setDescription(AmazonBookParser.getBookDesc(document));
-        //TODO
+        book.setBuyTogether(AmazonBookParser.getBuyTogether(document));
+        book.setAlsoBuy(AmazonBookParser.getAlsoBuy(document));
+
+        // 基本信息
+        Element bucketEl = document.getElementById("detail_bullets_id");
+        for(Element liEl : bucketEl.select("li")) {
+            String text = liEl.text().trim();
+            if (text.startsWith("出版社:")) {
+                book.setPublisher(text.replaceFirst("出版社:", "").trim());
+            } else if (text.startsWith("平装:") || text.startsWith("精装:")) {
+                book.setWrapType(WrapType.getFromName(text.substring(0, 3)));
+            } else if (text.startsWith("语种")) {
+                String language = text.replaceFirst("语种", "").replace(":", "").replace("：", "");
+                book.setLanguage(language);
+            } else if (text.startsWith("开本:")) {
+                String size = text.replaceFirst("开本:", "").trim();
+                book.setSize(Integer.parseInt(size));
+            } else if (text.startsWith("ISBN:")) {
+                book.setIsbn(text.replaceFirst("ISBN:", "").trim());
+            } else if (text.startsWith("条形码:")) {
+                book.setBarcode(text.replaceFirst("条形码:", "").trim());
+            } else if (text.startsWith("商品尺寸: ")) {
+                String sizeStr = text.replaceFirst("商品尺寸: ", "").replace("cm", "").trim();
+                String cms[] = sizeStr.split("x");
+                book.setLength(Double.parseDouble(cms[0].trim()));
+                book.setWidth(Double.parseDouble(cms[1].trim()));
+                book.setHeight(Double.parseDouble(cms[2].trim()));
+            } else if (text.startsWith("商品重量:")) {
+                String weight = text.replaceFirst("商品重量:", "").replace("Kg", "").trim();
+                book.setWeight(Double.parseDouble(weight.trim()));
+            } else if (text.startsWith("品牌:")) {
+                book.setBrand(text.replaceFirst("品牌:", "").trim());
+            } else if (text.startsWith("ASIN:")) {
+                book.setAsin(text.replace("ASIN:", "").trim());
+            }
+        }
+        book.setRankAll(AmazonBookParser.getRankAll(document));
+        book.setRankCats(AmazonBookParser.getRankCats(bucketEl));
+
+        //商品描述
+        Element contents = document.getElementById("s_contents");
+        for (Element contentEl : contents.getElementsByClass("s-content")) {
+            String h3 = contentEl.child(0).text();
+            String content = contentEl.child(1).text().trim();
+            if(h3.startsWith("编辑推荐")) {
+                book.setEditorSuggest(content);
+            } else if (h3.startsWith("媒体推荐")) {
+                book.setMediaSuggest(content);
+            } else if (h3.startsWith("作者简介")) {
+                book.setAuthorIntro(content);
+            } else if (h3.startsWith("目录")) {
+                book.setCatalog(content);
+            } else if (h3.startsWith("序言")) {
+                book.setPreface(content);
+            } else if (h3.startsWith("文摘")) {
+                book.setDigest(content);
+            }
+        }
+        book.setStarGroups(AmazonBookParser.getStarGroups(document));
+        book.setComments(AmazonBookParser.getComments(document));
         return book;
     }
 }

@@ -155,4 +155,27 @@ public class Category extends Storable{
         }
         return filename;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Category category = (Category) o;
+
+        if (type != category.type) return false;
+        if (!cat1name.equals(category.cat1name)) return false;
+        if (!cat2name.equals(category.cat2name)) return false;
+        return cat3name.equals(category.cat3name);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = type;
+        result = 31 * result + cat1name.hashCode();
+        result = 31 * result + cat2name.hashCode();
+        result = 31 * result + cat3name.hashCode();
+        return result;
+    }
 }

@@ -44,15 +44,6 @@ public abstract class Spider {
         return (System.currentTimeMillis() - file.lastModified()) / 86400 >= conf.getShelflife();
     }
 
-    protected String getHrefInElement(Element el) {
-        String html = el.toString();
-        String url = StringUtils.substringBetween(html, "href=\"", "\"");
-        return url.replaceAll("amp;", "");
-    }
 
-    protected String getSquareSortUrlFromDoc(Document document) {
-        Element squareSortEl = document.getElementsByAttributeValue("title", "图像视图").first();
-        String squareSortUrl = getHrefInElement(squareSortEl);
-        return squareSortUrl;
-    }
+
 }

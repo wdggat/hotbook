@@ -1,5 +1,6 @@
 package com.iread.bean;
 
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -8,7 +9,7 @@ import java.util.Date;
 public class Comment {
     private String id;
     private int star;
-    private Date date;
+    private Calendar date;
     private String title;
     private String author;
     private String content;
@@ -30,11 +31,11 @@ public class Comment {
         this.star = star;
     }
 
-    public Date getDate() {
+    public Calendar getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(Calendar date) {
         this.date = date;
     }
 
