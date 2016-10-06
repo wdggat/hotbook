@@ -1,5 +1,7 @@
 package com.iread.bean;
 
+import com.alibaba.fastjson.JSON;
+
 import java.util.*;
 
 /**
@@ -18,7 +20,8 @@ public class Book {
     private String seller;
     private double price;
     private String description;
-    private String imgUrl;
+    private String posterUrl;
+    private List<String> imgUrls;
     private List<Suggest> buyTogether;
     private List<Suggest> alsoBuy;
     private List<Suggest> visitorBuy;
@@ -37,6 +40,7 @@ public class Book {
     private int rankAll;
     private Map<Category, Integer> rankCats;
     private String editorSuggest;
+    private String celebritySuggest;
     private String mediaSuggest;
     private String authorIntro;
     private String catalog;
@@ -141,12 +145,12 @@ public class Book {
         this.description = description;
     }
 
-    public String getImgUrl() {
-        return imgUrl;
+    public List<String> getImgUrls() {
+        return imgUrls;
     }
 
-    public void setImgUrl(String imgUrl) {
-        this.imgUrl = imgUrl;
+    public void setImgUrls(List<String> imgUrls) {
+        this.imgUrls = imgUrls;
     }
 
     public List<Suggest> getBuyTogether() {
@@ -293,6 +297,14 @@ public class Book {
         this.editorSuggest = editorSuggest;
     }
 
+    public String getCelebritySuggest() {
+        return celebritySuggest;
+    }
+
+    public void setCelebritySuggest(String celebritySuggest) {
+        this.celebritySuggest = celebritySuggest;
+    }
+
     public String getMediaSuggest() {
         return mediaSuggest;
     }
@@ -347,5 +359,63 @@ public class Book {
 
     public void setComments(List<Comment> comments) {
         this.comments = comments;
+    }
+
+    public String getPosterUrl() {
+        return posterUrl;
+    }
+
+    public void setPosterUrl(String posterUrl) {
+        this.posterUrl = posterUrl;
+    }
+
+    public String toJsonStr() {
+        return JSON.toJSONString(this);
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "species=" + species + "\n" +
+                ", title='" + title + '\'' + "\n" +
+                ", wrapType=" + wrapType + "\n" +
+                ", onloadDate=" + onloadDate + "\n" +
+                ", author=" + author + "\n" +
+                ", translator=" + translator + "\n" +
+                ", star=" + star + "\n" +
+                ", commentNum=" + commentNum + "\n" +
+                ", category=" + category + "\n" +
+                ", seller='" + seller + '\'' + "\n" +
+                ", price=" + price + "\n" +
+                ", description='" + description + '\'' + "\n" +
+                ", posterUrl='" + posterUrl + '\'' + "\n" +
+                ", imgUrls=" + imgUrls + "\n" +
+                ", buyTogether=" + buyTogether + "\n" +
+                ", alsoBuy=" + alsoBuy + "\n" +
+                ", visitorBuy=" + visitorBuy + "\n" +
+                ", publisher='" + publisher + '\'' + "\n" +
+                ", pageNum=" + pageNum + "\n" +
+                ", language='" + language + '\'' + "\n" +
+                ", size=" + size + "\n" +
+                ", isbn='" + isbn + '\'' + "\n" +
+                ", barcode='" + barcode + '\'' + "\n" +
+                ", length=" + length + "\n" +
+                ", width=" + width + "\n" +
+                ", height=" + height + "\n" +
+                ", weight=" + weight + "\n" +
+                ", brand='" + brand + '\'' + "\n" +
+                ", asin='" + asin + '\'' + "\n" +
+                ", rankAll=" + rankAll + "\n" +
+                ", rankCats=" + rankCats + "\n" +
+                ", editorSuggest='" + editorSuggest + '\'' + "\n" +
+                ", celebritySuggest='" + celebritySuggest + '\'' + "\n" +
+                ", mediaSuggest='" + mediaSuggest + '\'' + "\n" +
+                ", authorIntro='" + authorIntro + '\'' + "\n" +
+                ", catalog='" + catalog + '\'' + "\n" +
+                ", preface='" + preface + '\'' + "\n" +
+                ", digest='" + digest + '\'' + "\n" +
+                ", starGroups=" + starGroups + "\n" +
+                ", comments=" + comments + "\n" +
+                '}';
     }
 }

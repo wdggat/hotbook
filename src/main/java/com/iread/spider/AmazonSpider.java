@@ -2,7 +2,10 @@ package com.iread.spider;
 
 import com.iread.bean.*;
 import com.iread.conf.ConfMan;
+import com.iread.parser.AmazonBookDescParser;
 import com.iread.parser.AmazonBookParser;
+import com.iread.parser.AmazonKindleParser;
+import com.iread.parser.SpiderParser;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
@@ -172,7 +175,7 @@ public class AmazonSpider extends Spider {
             String title = titleEl.attr("title");
             String onloadTime = bookPreviewEl.getElementsByClass("a-size-small").first().text();
             Element priceEl = bookPreviewEl.getElementsByClass("a-color-price").first();
-            String price = priceEl.text();
+            double price = AmazonBookParser.priceCast(priceEl.text());
             Element linkEl = bookPreviewEl.getElementsByClass("a-spacing-mini").last();
             String kindleUrl = null,paperbackUrl = null,hardbackUrl = null;
             for(Element el : linkEl.select("a")) {
@@ -211,76 +214,100 @@ public class AmazonSpider extends Spider {
         book.setSpecies(Species.AMAZON);
         book.setTitle(bookPreview.getTitle());
         book.setWrapType(bookPreview.getTopWrapType());
-        Element titleEl = document.getElementById("title");
-        book.setOnloadDate(AmazonBookParser.getDate(titleEl));
+        book.setStar(bookPreview.getStar());
+        book.setCommentNum(bookPreview.getVoteNum());
+        book.setCategory(bookPreview.getCategory());
         ArrayList<String> authors = AmazonBookParser.getAuthors(document, "作者");
         ArrayList<String> translators = AmazonBookParser.getAuthors(document, "译");
         book.setAuthor(authors);
         book.setTranslator(translators);
-        book.setStar(bookPreview.getStar());
-        book.setCommentNum(bookPreview.getVoteNum());
-        book.setCategory(bookPreview.getCategory());
         book.setPrice(AmazonBookParser.getPrice(document));
-        book.setSeller(AmazonBookParser.getSeller(document));
-        book.setDescription(AmazonBookParser.getBookDesc(document));
-        book.setBuyTogether(AmazonBookParser.getBuyTogether(document));
         book.setAlsoBuy(AmazonBookParser.getAlsoBuy(document));
-
-        // 基本信息
         Element bucketEl = document.getElementById("detail_bullets_id");
-        for(Element liEl : bucketEl.select("li")) {
-            String text = liEl.text().trim();
-            if (text.startsWith("出版社:")) {
-                book.setPublisher(text.replaceFirst("出版社:", "").trim());
-            } else if (text.startsWith("平装:") || text.startsWith("精装:")) {
-                book.setWrapType(WrapType.getFromName(text.substring(0, 3)));
-            } else if (text.startsWith("语种")) {
-                String language = text.replaceFirst("语种", "").replace(":", "").replace("：", "");
-                book.setLanguage(language);
-            } else if (text.startsWith("开本:")) {
-                String size = text.replaceFirst("开本:", "").trim();
-                book.setSize(Integer.parseInt(size));
-            } else if (text.startsWith("ISBN:")) {
-                book.setIsbn(text.replaceFirst("ISBN:", "").trim());
-            } else if (text.startsWith("条形码:")) {
-                book.setBarcode(text.replaceFirst("条形码:", "").trim());
-            } else if (text.startsWith("商品尺寸: ")) {
-                String sizeStr = text.replaceFirst("商品尺寸: ", "").replace("cm", "").trim();
-                String cms[] = sizeStr.split("x");
-                book.setLength(Double.parseDouble(cms[0].trim()));
-                book.setWidth(Double.parseDouble(cms[1].trim()));
-                book.setHeight(Double.parseDouble(cms[2].trim()));
-            } else if (text.startsWith("商品重量:")) {
-                String weight = text.replaceFirst("商品重量:", "").replace("Kg", "").trim();
-                book.setWeight(Double.parseDouble(weight.trim()));
-            } else if (text.startsWith("品牌:")) {
-                book.setBrand(text.replaceFirst("品牌:", "").trim());
-            } else if (text.startsWith("ASIN:")) {
-                book.setAsin(text.replace("ASIN:", "").trim());
+        if(book.getWrapType().equals(WrapType.KINDLE)) {
+            book.setOnloadDate(SpiderParser.parseDate(bookPreview.getOnloadTime()));
+            book.setSeller("亚马逊");
+            book.setDescription(AmazonKindleParser.getBookDesc(document));
+            for(Element liEl : bucketEl.select("li")) {
+                String text = liEl.text().trim();
+                if(text.startsWith("文件大小")) {
+                    String size = text.replaceAll("(文件大小|:|：|KB)", "");
+                    book.setSize(Integer.parseInt(size.trim()));
+                } else if(text.startsWith("纸书页数")) {
+                    String page = text.replaceAll("(纸书页数|:|：)", "");
+                    book.setPageNum(Integer.parseInt(page.trim()));
+                } else if (text.startsWith("出版社:")) {
+                    book.setPublisher(text.replaceFirst("出版社:", "").trim());
+                } else if (text.startsWith("语种")) {
+                    String language = text.replaceFirst("语种", "").replace(":", "").replace("：", "");
+                    book.setLanguage(language.trim());
+                } else if (text.startsWith("品牌:")) {
+                    book.setBrand(text.replaceFirst("品牌:", "").trim());
+                } else if (text.startsWith("ASIN:")) {
+                    book.setAsin(text.replace("ASIN:", "").trim());
+                }
+            }
+            book.setImgUrls(AmazonKindleParser.getImgUrls(document));
+        } else {
+            Element titleEl = document.getElementById("title");
+            book.setOnloadDate(AmazonBookParser.getDate(titleEl));
+            book.setSeller(AmazonBookParser.getSeller(document));
+
+            book.setDescription(AmazonBookParser.getBookDesc(document));
+            book.setPosterUrl(AmazonBookParser.getPosterUrl(document));
+            book.setBuyTogether(AmazonBookParser.getBuyTogether(document));
+
+            // 基本信息
+            for(Element liEl : bucketEl.select("li")) {
+                String text = liEl.text().trim();
+                if (text.startsWith("出版社:")) {
+                    book.setPublisher(text.replaceFirst("出版社:", "").trim());
+                } else if (text.startsWith("平装:") || text.startsWith("精装:")) {
+                    book.setWrapType(WrapType.getFromName(text.substring(0, 3)));
+                    String paper = text.replaceAll("(平装|精装|:|页)", "").trim();
+                    book.setPageNum(Integer.parseInt(paper));
+                } else if (text.startsWith("语种")) {
+                    String language = text.replaceFirst("语种", "").replace(":", "").replace("：", "");
+                    book.setLanguage(language.trim());
+                } else if (text.startsWith("开本:")) {
+                    String size = text.replaceFirst("开本:", "").trim();
+                    book.setSize(Integer.parseInt(size));
+                } else if (text.startsWith("ISBN:")) {
+                    book.setIsbn(text.replaceFirst("ISBN:", "").trim());
+                } else if (text.startsWith("条形码:")) {
+                    book.setBarcode(text.replaceFirst("条形码:", "").trim());
+                } else if (text.startsWith("商品尺寸: ")) {
+                    String sizeStr = text.replaceFirst("商品尺寸: ", "").replace("cm", "").trim();
+                    String cms[] = sizeStr.split("x");
+                    book.setLength(Double.parseDouble(cms[0].trim()));
+                    book.setWidth(Double.parseDouble(cms[1].trim()));
+                    book.setHeight(Double.parseDouble(cms[2].trim()));
+                } else if (text.startsWith("商品重量:")) {
+                    String weight = text.replaceFirst("商品重量:", "").replace("Kg", "").trim();
+                    book.setWeight(Double.parseDouble(weight.trim()));
+                } else if (text.startsWith("品牌:")) {
+                    book.setBrand(text.replaceFirst("品牌:", "").trim());
+                } else if (text.startsWith("ASIN:")) {
+                    book.setAsin(text.replace("ASIN:", "").trim());
+                }
+                book.setImgUrls(AmazonBookParser.getImgUrls(document));
+                //商品描述
+                Element contents = document.getElementById("s_contents");
+                String descUrl = HOST + contents.attr("descUrl");
+                BookDescription desc = new BookDescription(book, descUrl);
+                AmazonBookDescParser.parseBookDesc(desc);
+                book.setEditorSuggest(desc.getEditorSuggest());
+                book.setCelebritySuggest(desc.getCelebritySuggest());
+                book.setMediaSuggest(desc.getMediaSuggest());
+                book.setAuthorIntro(desc.getAuthorIntro());
+                book.setCatalog(desc.getCatalog());
+                book.setPreface(desc.getPreface());
+                book.setDigest(desc.getDigest());
             }
         }
         book.setRankAll(AmazonBookParser.getRankAll(document));
         book.setRankCats(AmazonBookParser.getRankCats(bucketEl));
 
-        //商品描述
-        Element contents = document.getElementById("s_contents");
-        for (Element contentEl : contents.getElementsByClass("s-content")) {
-            String h3 = contentEl.child(0).text();
-            String content = contentEl.child(1).text().trim();
-            if(h3.startsWith("编辑推荐")) {
-                book.setEditorSuggest(content);
-            } else if (h3.startsWith("媒体推荐")) {
-                book.setMediaSuggest(content);
-            } else if (h3.startsWith("作者简介")) {
-                book.setAuthorIntro(content);
-            } else if (h3.startsWith("目录")) {
-                book.setCatalog(content);
-            } else if (h3.startsWith("序言")) {
-                book.setPreface(content);
-            } else if (h3.startsWith("文摘")) {
-                book.setDigest(content);
-            }
-        }
         book.setStarGroups(AmazonBookParser.getStarGroups(document));
         book.setComments(AmazonBookParser.getComments(document));
         return book;

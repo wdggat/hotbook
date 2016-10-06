@@ -41,10 +41,12 @@ public class Exporter {
 
     public static int exportBooks(Collection<Book> books) throws SQLException {
         //TODO
+        return 0;
     }
 
     public static int exportBookPreviews(Collection<BookPreview> bookPreviews) throws SQLException {
         //TODO
+        return 0;
     }
 
 }

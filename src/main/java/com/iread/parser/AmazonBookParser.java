@@ -9,10 +9,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,20 +20,6 @@ public class AmazonBookParser extends SpiderParser {
     public static Calendar getDate(Element titleEl) {
         String dateStr = titleEl.getElementsContainingText("年").last().text();
         return parseDate(dateStr);
-    }
-
-    public static Calendar parseDate(String dateStr) {
-        Calendar date = null;
-        Pattern pattern = Pattern.compile("([0-9]+)年([0-9]+)月([0-9]+)");
-        Matcher matcher = pattern.matcher(dateStr);
-        if(matcher.matches()) {
-            date = Calendar.getInstance();
-            int year = Integer.parseInt(matcher.group(1));
-            int month = Integer.parseInt(matcher.group(2));
-            int day = Integer.parseInt(matcher.group(3));
-            date.set(year, month, day, 0, 0, 0);
-        }
-        return date;
     }
 
     public static ArrayList<String> getAuthors(Document document, String flag) {
@@ -67,15 +50,18 @@ public class AmazonBookParser extends SpiderParser {
     }
 
     public static String getBookDesc(Document document) {
-        Element bookDescEl = document.getElementById("bookDesc_iframe");
-        Element contentEl = bookDescEl.getElementById("iframeContent");
+//        System.out.println(document.toString());
+        Element contentEl = document.getElementById("bookDescription_feature_div");
         return contentEl.text();
     }
 
-    public static String getImgUrl(Document document) {
-        Element imgEl = document.getElementById("img-canvas");
-        Element srcEl = imgEl.select("img").first();
-        return srcEl.attr("src");
+    public static List<String> getImgUrls(Document document) {
+        Element imgEl = document.getElementById("imgThumbs");
+        List<String> imgUrls = new ArrayList<String>();
+        for(Element el : imgEl.select("img")) {
+            imgUrls.add(el.attr("src"));
+        }
+        return imgUrls;
     }
 
     public static String getHrefInElement(Element el) {
@@ -143,9 +129,9 @@ public class AmazonBookParser extends SpiderParser {
             String url = AmazonSpider.HOST + getHrefInElement(hrefEl);
             buyTogether.get(i - 1).setUrl(url);
             Elements spanEls = labelEl.select("span");
-            buyTogether.get(i - 1).setPrice(priceCast(spanEls.last().text()));
-            buyTogether.get(i - 1).setWrapType(WrapType.getFromName(spanEls.get(spanEls.size() - 2).text()));
-            buyTogether.get(i - 1).setAuthor(authorClean(spanEls.get(spanEls.size() - 3).text()));
+            buyTogether.get(i - 1).setPrice(priceCast(spanEls.get(2).text()));
+            buyTogether.get(i - 1).setWrapType(WrapType.getFromName(spanEls.get(1).text()));
+            buyTogether.get(i - 1).setAuthor(authorClean(spanEls.get(0).text()));
         }
         return buyTogether;
     }
@@ -173,7 +159,7 @@ public class AmazonBookParser extends SpiderParser {
 
     public static int getRankAll(Document document) {
         Element rankEl = document.getElementById("SalesRank");
-        String randStr = StringUtils.substringBetween(rankEl.text(), "图书商品里排第", "名");
+        String randStr = StringUtils.substringBetween(rankEl.text(), "商品里排第", "名");
         return Integer.parseInt(randStr);
     }
 
@@ -185,10 +171,16 @@ public class AmazonBookParser extends SpiderParser {
             String rankStr = StringUtils.substringBetween(rankText, "第", "位");
             Integer rank = Integer.parseInt(rankStr);
             Elements aEls = rankCatEl.select("a");
-            String cat1 = aEls.get(1).text();
-            String cat2 = aEls.get(2).text();
-            String cat3 = aEls.get(3).text();
-            String url = AmazonBookParser.getHrefInElement(aEls.get(3));
+            for (int i = 0; i< aEls.size(); i++) {
+                String text = aEls.get(i).text();
+                if (text.contains("Kindle") || text.contains("kindle") || text.equals("图书")) {
+                    aEls.remove(i);
+                }
+            }
+            String cat1 = aEls.get(0).text();
+            String cat2 = (aEls.size() >= 2) ? aEls.get(1).text() : null;
+            String cat3 = (aEls.size() >= 3) ? aEls.get(2).text() : null;
+            String url = AmazonBookParser.getHrefInElement(aEls.last());
             Category category = new Category();
             category.setSpecies(Species.AMAZON);
             category.setCat1name(cat1);
@@ -220,24 +212,36 @@ public class AmazonBookParser extends SpiderParser {
             Element iconEl = commentEl.getElementsByClass("a-icon-star").first();
             String starS = StringUtils.substringBetween(iconEl.text(), "平均", ".0");
             comment.setStar(Integer.parseInt(starS));
-            Element titleEl = iconEl.parent().nextElementSibling();
+            Element titleEl = commentEl.getElementsByClass("a-icon-row").select("span").last();
             comment.setTitle(titleEl.text());
-            Element commentatorEl = titleEl.parent().nextElementSibling();
-            String commentator = StringUtils.substringBetween(commentatorEl.toString(), "noTextDecoration\">", "</a>");
+            Element commentatorEl = commentEl.getElementsByAttributeValueContaining("href", "profile.amazon").first();
+            String commentator = commentatorEl.text();
             comment.setAuthor(commentator);
-            String dateStr = StringUtils.substringBetween(commentatorEl.toString(), "于", "</span>");
+            Element dateEl = commentEl.getElementsMatchingOwnText(Pattern.compile("([0-9]+)年([0-9]+)月([0-9]+)日")).first();
+            String dateStr = StringUtils.substringBetween(dateEl.toString(), "于", "</span>");
             comment.setDate(parseDate(dateStr.trim()));
             Element revDataEl = commentEl.getElementsByAttributeValueStarting("id", "revData-").first();
             String content = revDataEl.getElementsByClass("a-section").last().text();
             comment.setContent(content);
             Elements praiseEls = commentEl.getElementsByClass("cr-vote-buttons");
             if(!praiseEls.isEmpty()) {
-                String praiseS = StringUtils.substringBefore(praiseEls.text(), "个人发现此评论有用");
-                comment.setPraise(Integer.parseInt(praiseS.trim()));
+                String praiseS = StringUtils.substringBetween(praiseEls.text(), "", "个人发现此评论有用");
+                comment.setPraise(praiseS == null ? 0 : Integer.parseInt(praiseS.trim()));
             }
             comments.add(comment);
         }
         return comments;
     }
+
+    public static String getPosterUrl(Document document) {
+        Element descEl = document.getElementById("bookDescription_feature_div");
+        Element imgEl = descEl.select("img").first();
+        return imgEl.attr("src");
+    }
+
+    /*public static String getImgUrl(Document document) {
+        Element imgEl = document.getElementById("imgBlkFront");
+        return imgEl.attr("src");
+    }*/
 
 }

@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +29,7 @@ public abstract class Spider {
         return Jsoup.parse(content);
     }
 
-    protected Document fetchDocument(Storable storable) throws IOException {
+    public static Document fetchDocument(Storable storable) throws IOException {
         String path = conf.getWarehouse(storable.getSpecies()) + "/" + storable.getStoreFilename();
         File storeFile = new File(path);
         // 文件不存在或已过期
@@ -40,10 +41,8 @@ public abstract class Spider {
         return Jsoup.parse(storeFile, "UTF-8");
     }
 
-    protected boolean expired(File file) {
+    protected static boolean expired(File file) {
         return (System.currentTimeMillis() - file.lastModified()) / 86400 >= conf.getShelflife();
     }
-
-
 
 }

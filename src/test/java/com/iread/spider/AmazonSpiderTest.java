@@ -65,22 +65,31 @@ public class AmazonSpiderTest {
         Category category = new Category();
         category.setUrl(url);
         ArrayList<BookPreview> previews = amazonSpider.fetchBookPreviews(category, 15);
+        for(BookPreview bookPreview : previews) {
+            System.out.println(bookPreview.toString());
+        }
         Assert.assertEquals(conf.getAmazonBooknumPerSquareSortPage(), previews.size());
     }
 
     @Test
     public void testFetchBook_paperback() throws IOException {
         String url = "https://www.amazon.cn/%E9%AD%94%E9%AC%BC%E7%BB%8F%E6%B5%8E%E5%AD%A6%E7%B3%BB%E5%88%97-%E5%8F%B2%E8%92%82%E8%8A%AC%C2%B7%E5%88%97%E7%BB%B4%E7%89%B9/dp/B01KV0D9OW/ref=sr_1_3?s=books&ie=UTF8&qid=1474475789&sr=1-3";
-        BookPreview bookPreview = new BookPreview(Species.AMAZON, 1, "", "", "", "", url, "", "", 0f, 0);
+        BookPreview bookPreview = new BookPreview(Species.AMAZON, 263, "ASIN_test", "TITLE_test_魔鬼经济学", "2016年4月", null, url, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBook(bookPreview);
-        Assert.assertTrue(book != null);
+        System.out.println(book.toString());
+        Assert.assertNotNull(book);
+        Assert.assertTrue(book.getAsin().length() > 5);
+        Assert.assertTrue(book.getDescription().length() > 5);
+        Assert.assertTrue(book.getCatalog().length() > 5);
     }
 
     @Test
     public void testFetchBook_kindle() throws IOException {
         String url = "https://www.amazon.cn/dp/B0151E1R06/ref=tmm_kin_swatch_0?_encoding=UTF8&qid=&sr=";
-        BookPreview bookPreview = new BookPreview(Species.AMAZON, 1, "", "", url, "", "", "", "", 0f, 0);
+        BookPreview bookPreview = new BookPreview(Species.AMAZON, 263, "ASIN_test", "TITLE_test_超越智商", "2016年4月", url, null, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBook(bookPreview);
-        Assert.assertTrue(book != null);
+        System.out.println(book.toString());
+        Assert.assertNotNull(book);
+        Assert.assertTrue(book.getDescription().length() > 5);
     }
 }

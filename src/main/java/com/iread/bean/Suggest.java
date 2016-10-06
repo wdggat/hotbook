@@ -1,5 +1,7 @@
 package com.iread.bean;
 
+import com.alibaba.fastjson.JSON;
+
 /**
  * Created by liu on 16/9/30.
  */
@@ -84,5 +86,10 @@ public class Suggest {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
     }
 }

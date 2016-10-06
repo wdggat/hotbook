@@ -136,7 +136,7 @@ public class Category extends Storable{
     }
 
     public String getCatFullName() {
-        return cat1name + cat2name + cat3name;
+        return cat1name + "|" + cat2name + "|" + cat3name;
     }
 
     @Override
@@ -164,18 +164,20 @@ public class Category extends Storable{
         Category category = (Category) o;
 
         if (type != category.type) return false;
+        if (species != category.species) return false;
         if (!cat1name.equals(category.cat1name)) return false;
-        if (!cat2name.equals(category.cat2name)) return false;
-        return cat3name.equals(category.cat3name);
+        if (cat2name != null ? !cat2name.equals(category.cat2name) : category.cat2name != null) return false;
+        return cat3name != null ? cat3name.equals(category.cat3name) : category.cat3name == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = type;
+        int result = species.hashCode();
+        result = 31 * result + type;
         result = 31 * result + cat1name.hashCode();
-        result = 31 * result + cat2name.hashCode();
-        result = 31 * result + cat3name.hashCode();
+        result = 31 * result + (cat2name != null ? cat2name.hashCode() : 0);
+        result = 31 * result + (cat3name != null ? cat3name.hashCode() : 0);
         return result;
     }
 }

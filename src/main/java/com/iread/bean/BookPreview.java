@@ -13,13 +13,13 @@ public class BookPreview extends Storable{
     private String kindleUrl;
     private String paperbackUrl;
     private String hardbackUrl;
-    private String price;
-    private Float star;
+    private double price;
+    private float star;
     private int voteNum;
     private int order;
     private Category category;
 
-    public BookPreview(Species species, int order, String asin, String title, String onloadTime, String kindleUrl, String paperbackUrl, String hardbackUrl, String price, Float star, int voteNum) {
+    public BookPreview(Species species, int order, String asin, String title, String onloadTime, String kindleUrl, String paperbackUrl, String hardbackUrl, double price, Float star, int voteNum) {
         this.species = species;
         this.order = order;
         this.asin = asin;
@@ -113,11 +113,11 @@ public class BookPreview extends Storable{
         this.hardbackUrl = hardbackUrl;
     }
 
-    public String getPrice() {
+    public double getPrice() {
         return price;
     }
 
-    public void setPrice(String price) {
+    public void setPrice(double price) {
         this.price = price;
     }
 
@@ -131,7 +131,25 @@ public class BookPreview extends Storable{
 
     @Override
     public String toString() {
+        return "BookPreview{" +
+                "species=" + species + "\n" +
+                ", asin='" + asin + '\'' + "\n" +
+                ", title='" + title + '\'' + "\n" +
+                ", onloadTime='" + onloadTime + '\'' + "\n" +
+                ", kindleUrl='" + kindleUrl + '\'' + "\n" +
+                ", paperbackUrl='" + paperbackUrl + '\'' + "\n" +
+                ", hardbackUrl='" + hardbackUrl + '\'' + "\n" +
+                ", price=" + price + "\n" +
+                ", star=" + star + "\n" +
+                ", voteNum=" + voteNum + "\n" +
+                ", order=" + order + "\n" +
+                ", category=" + category + "\n" +
+                '}';
+    }
+
+    public String toJsonStr() {
         return JSON.toJSONString(this);
+
     }
 
     @Override

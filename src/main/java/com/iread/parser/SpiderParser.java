@@ -1,5 +1,9 @@
 package com.iread.parser;
 
+import java.util.Calendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Created by liu on 16/10/2.
  */
@@ -13,4 +17,18 @@ public class SpiderParser {
         return authorText.replace("-", "").trim();
     }
 
+    public static Calendar parseDate(String dateStr) {
+        Calendar date = null;
+        Pattern pattern = Pattern.compile("([0-9]+)年([0-9]+)月([0-9]+)");
+        Matcher matcher = pattern.matcher(dateStr);
+        if(matcher.find()) {
+            date = Calendar.getInstance();
+            int year = Integer.parseInt(matcher.group(1));
+            int month = Integer.parseInt(matcher.group(2));
+            int day = Integer.parseInt(matcher.group(3));
+            date.set(year, month, day, 0, 0, 0);
+            date.set(Calendar.MILLISECOND, 0);
+        }
+        return date;
+    }
 }

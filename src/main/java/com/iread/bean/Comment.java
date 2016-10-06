@@ -1,5 +1,7 @@
 package com.iread.bean;
 
+import com.alibaba.fastjson.JSON;
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -69,5 +71,10 @@ public class Comment {
 
     public void setPraise(int praise) {
         this.praise = praise;
+    }
+
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this);
     }
 }
