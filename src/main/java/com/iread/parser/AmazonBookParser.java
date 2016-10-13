@@ -85,6 +85,8 @@ public class AmazonBookParser extends SpiderParser {
             Element imgEl = el.select("img").first();
             alsoBuySuggest.setTitle(imgEl.attr("alt"));
             alsoBuySuggest.setUrl(url);
+            String asin = getAsinFromUrl(url);
+            alsoBuySuggest.setAsin(asin);
             alsoBuySuggest.setImgUrl(imgEl.attr("src"));
             Elements spans = el.select("span");
             alsoBuySuggest.setAuthor(spans.first().text());
@@ -109,7 +111,6 @@ public class AmazonBookParser extends SpiderParser {
      * 经常一起买,此处不会有星级打分
      */
     public static ArrayList<Suggest> getBuyTogether(Document document) {
-        //经常一起买
         ArrayList<Suggest> buyTogether = new ArrayList<Suggest>();
         Element imageUl = document.getElementsByClass("sims-fbt-image-box").first();
         Elements imgEls = imageUl.select("img");
@@ -127,6 +128,8 @@ public class AmazonBookParser extends SpiderParser {
             Element labelEl = labelEls.get(i);
             Element hrefEl = labelEl.select("a").first();
             String url = AmazonSpider.HOST + getHrefInElement(hrefEl);
+            String asin = getAsinFromUrl(url);
+            buyTogether.get(i - 1).setAsin(asin);
             buyTogether.get(i - 1).setUrl(url);
             Elements spanEls = labelEl.select("span");
             buyTogether.get(i - 1).setPrice(priceCast(spanEls.get(2).text()));
@@ -153,6 +156,9 @@ public class AmazonBookParser extends SpiderParser {
 
     public static String getSquareSortUrlFromDoc(Document document) {
         Element squareSortEl = document.getElementsByAttributeValue("title", "图像视图").first();
+        if (squareSortEl == null) {
+            return null;
+        }
         String squareSortUrl = getHrefInElement(squareSortEl);
         return squareSortUrl;
     }
@@ -237,6 +243,10 @@ public class AmazonBookParser extends SpiderParser {
         Element descEl = document.getElementById("bookDescription_feature_div");
         Element imgEl = descEl.select("img").first();
         return imgEl.attr("src");
+    }
+
+    public static String getAsinFromUrl(String url) {
+        return StringUtils.substringBetween(url, "/dp/", "/");
     }
 
     /*public static String getImgUrl(Document document) {

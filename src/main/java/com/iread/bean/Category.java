@@ -34,6 +34,7 @@ public class Category extends Storable{
     private String cat1name;
     private String cat2name;
     private String cat3name;
+    private int categoryid;
 
     public Category() {}
 
@@ -137,6 +138,14 @@ public class Category extends Storable{
 
     public String getCatFullName() {
         return cat1name + "|" + cat2name + "|" + cat3name;
+    }
+
+    public int getCategoryid() {
+        return categoryid;
+    }
+
+    public void setCategoryid(int categoryid) {
+        this.categoryid = categoryid;
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSON;
  * Created by liu on 16/9/30.
  */
 public class Suggest {
+    private String asin;
     private String title;
     private String author;
     private WrapType wrapType;
@@ -15,6 +16,14 @@ public class Suggest {
     private int commentNum;
     private String url;
     private SuggestType suggestType;
+
+    public String getAsin() {
+        return asin;
+    }
+
+    public void setAsin(String asin) {
+        this.asin = asin;
+    }
 
     public String getTitle() {
         return title;

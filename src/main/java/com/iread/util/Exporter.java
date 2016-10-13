@@ -16,8 +16,8 @@ public class Exporter {
     public static int exportCategorys(Collection<Category> categories) throws SQLException {
         MysqlManager mysqlManager = MysqlManager.getInstance();
         Connection conn = mysqlManager.getConnection();
-        String sql = "insert into categorys (species,type,fullname,url,amount,level,isleaf,cat1name,cat2name,cat3name) " +
-                " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "insert into category (species,type,fullname,url,amount,level,isleaf,cat1name,cat2name,cat3name) " +
+                " values (?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE amount=VALUES(amount),url=VALUES(url)";
         PreparedStatement ps = conn.prepareStatement(sql);
         conn.setAutoCommit(false);
         for (Category category : categories) {
@@ -30,8 +30,8 @@ public class Exporter {
             ps.setInt(++index, category.getLevel());
             ps.setBoolean(++index, category.isLeaf());
             ps.setString(++index, category.getCat1name());
-            ps.setString(++index, category.getCat2name());
-            ps.setString(++index, category.getCat3name());
+            ps.setString(++index, category.getCat2name() == null ? "" : category.getCat2name());
+            ps.setString(++index, category.getCat3name() == null ? "" : category.getCat3name());
             ps.addBatch();
         }
         ps.executeBatch();

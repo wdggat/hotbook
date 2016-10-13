@@ -29,7 +29,7 @@ public class Scheduler {
         if (species.equals(Species.AMAZON)) {
             spider = new AmazonSpider(conf);
         }
-        startToWork(new ScrawlerTask(conf, spider));
+        startToWork(new ScrawlerTask(conf, spider, species));
     }
 
     public void startToWork(Runnable task) {

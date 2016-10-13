@@ -6,6 +6,7 @@ import com.iread.parser.AmazonBookDescParser;
 import com.iread.parser.AmazonBookParser;
 import com.iread.parser.AmazonKindleParser;
 import com.iread.parser.SpiderParser;
+import com.iread.util.WBListHelper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
@@ -29,22 +30,28 @@ public class AmazonSpider extends Spider {
         this.conf = conf;
     }
 
+    @Override
     public ArrayList<Category> fetchCategorys() {
         ArrayList<Category> allCats = new ArrayList<Category>();
         try {
             ArrayList<Category> catsLevel1 = fetchCategorysLevel1();
+            logger.info("Fetched categorys level1: " + catsLevel1);
             allCats.addAll(catsLevel1);
             for (Category category : catsLevel1) {
+                logger.info("Sub categorys fetch begin: " + category.getCatFullName() + ", url : " + category.getUrl());
                 category.setLeaf(false);
-                category.setCat1name(category.getName());
-                if (category.getType() == Category.TYPE_NORMAL) {
+//                category.setCat1name(category.getName());
+                if (!WBListHelper.checkCategory(category)) {
+                    logger.info("category not in white list, skip it");
+                } else if (category.getType() == Category.TYPE_NORMAL) {
                     // 2级子类目
                     ArrayList<Category> catsLevel2 = fetchSubCategorys(category);
                     allCats.addAll(catsLevel2);
                     for (Category catLevel2 : catsLevel2) {
                         catLevel2.setCat1name(category.getCat1name());
                         catLevel2.setCat2name(catLevel2.getName());
-                        ArrayList<Category> catsLevel3 = fetchSubCategorys(category);
+                        logger.info("Sub categorys fetch begin: " + catLevel2.getCatFullName() + ", cur level : 2, url: " + catLevel2.getUrl());
+                        ArrayList<Category> catsLevel3 = fetchSubCategorys(catLevel2);
                         allCats.addAll(catsLevel3);
                         if (catsLevel3.isEmpty()) {
                             catLevel2.setLeaf(true);
@@ -55,12 +62,18 @@ public class AmazonSpider extends Spider {
                                 catLevel3.setCat1name(catLevel2.getCat1name());
                                 catLevel3.setCat2name(catLevel2.getCat2name());
                                 catLevel3.setCat3name(catLevel3.getName());
+                                logger.debug("to get url of category : " + catLevel3);
                                 Document level3Doc = fetchDocument(catLevel3);
                                 String squareSortUrl = AmazonBookParser.getSquareSortUrlFromDoc(level3Doc);
-                                catLevel3.setUrl(squareSortUrl);
+                                if (squareSortUrl != null) {
+                                    catLevel3.setUrl(squareSortUrl.startsWith(HOST) ? squareSortUrl : (HOST + squareSortUrl));
+                                }
+                                logger.info("Got sub category: " + catLevel3);
                             }
                         }
                     }
+                } else {
+                    logger.info("category type SPECIAL, skip it");
                 }
             }
         } catch (IOException e) {
@@ -78,13 +91,16 @@ public class AmazonSpider extends Spider {
         for(Element el : specialCategoryEl.getElementsByTag("li")) {
             String url = AmazonBookParser.getHrefInElement(el);
             String name = el.text();
-            Category cat = new Category(Species.AMAZON, Category.TYPE_HOT, name, "", HOST + url, 0, 1);
+            Category cat = new Category(Species.AMAZON, Category.TYPE_HOT, name, "", url.contains(HOST) ? url : (HOST + url), 0, 1);
+            cat.setCat1name(name);
             categories.add(cat);
-            logger.info("Got category: " + cat.toString());
         }
 
         //图书
         ArrayList<Category> normalCats = parseLeftCategorySections(document, "图书", 1);
+        for(Category category : normalCats) {
+            category.setCat1name(category.getName());
+        }
         categories.addAll(normalCats);
         return categories;
     }
@@ -95,6 +111,7 @@ public class AmazonSpider extends Spider {
             logger.info("SubCat's url: " + rootCat.getName() + ", " + rootCat.getUrl());
             Document document = fetchDocument(rootCat);
             String squareSortUrl = AmazonBookParser.getSquareSortUrlFromDoc(document);
+            squareSortUrl = squareSortUrl.contains(HOST) ? squareSortUrl : (HOST + squareSortUrl);
             rootCat.setUrl(squareSortUrl);
 //            logger.debug("---------------------------- documents --------------------------------- \n" + document.html());
             ArrayList<Category> subLevels = parseLeftCategorySections(document, rootCat.getName(), rootCat.getLevel() + 1);
@@ -125,7 +142,7 @@ public class AmazonSpider extends Spider {
             String name = el.getElementsByAttributeValue("class", "refinementLink").text();
             String amountStr = el.getElementsByAttributeValue("class", "narrowValue").text();
             int amount = Integer.parseInt(StringUtils.substringBetween(amountStr, "(", ")").replace(",", ""));
-            Category cat = new Category(Species.AMAZON, Category.TYPE_NORMAL, name, parentCategoryName, HOST + url, amount, catLevel);
+            Category cat = new Category(Species.AMAZON, Category.TYPE_NORMAL, name, parentCategoryName, url.contains(HOST) ? url : (HOST + url), amount, catLevel);
             categories.add(cat);
             logger.info("Got category: " + cat.toString());
         }

@@ -1,12 +1,20 @@
 package com.iread;
 
+import com.iread.bean.Book;
+import com.iread.bean.BookPreview;
+import com.iread.bean.Category;
+import com.iread.bean.Species;
 import com.iread.conf.ConfMan;
 import com.iread.spider.Spider;
+import com.iread.util.Exporter;
+import com.iread.util.Importer;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ScrawlerTask implements Runnable {
     private Logger logger = Logger.getLogger(ScrawlerTask.class);
@@ -14,39 +22,36 @@ public class ScrawlerTask implements Runnable {
 
     private ConfMan conf;
     private Spider spider;
+    private Species species;
 
-    public ScrawlerTask(ConfMan conf, Spider spider) {
+    public ScrawlerTask(ConfMan conf, Spider spider, Species species) {
         this.conf = conf;
         this.searchRounds = 1;
         this.spider = spider;
+        this.species = species;
     }
 
     public void run() {
         try {
+            logger.info("start round " + searchRounds);
             // Reload configurations that changes at runtime
             conf.reload();
-
+            List<Category> categories = Importer.readCategorys(species);
+            logger.info("Read " + categories.size() + " categories");
+            for (Category category : categories) {
+                ArrayList<Book> books = new ArrayList<Book>();
+                ArrayList<BookPreview> previews = spider.fetchBookPreviews(category);
+                for (BookPreview bookPreview : previews) {
+                    Book book = spider.fetchBook(bookPreview);
+                    books.add(book);
+                    logger.info(book.getSpecies() + " fetched book : " + book.getTitle());
+                }
+                Exporter.exportBooks(books);
+                logger.info(category.getSpecies() + " exported books num : " + books.size());
+            }
         } catch (Throwable e) {
             logger.error("Something wrong happens during spider running:",
                     e);
         }
-    }
-
-    private File moveDir(String srcPath, String destPath) {
-        File srcDir = new File(srcPath);
-        if (!srcDir.exists()) {
-            logger.info("Failed to move dirs since File " + srcPath
-                    + " doesn't exist");
-            return null;
-        }
-        File destDir = new File(destPath);
-        try {
-            FileUtils.moveDirectory(srcDir, destDir);
-            logger.info("Move " + srcPath + " to " + destPath);
-        } catch (IOException e) {
-            logger.error("Can't move " + srcPath + " to " + destPath, e);
-            return null;
-        }
-        return destDir;
     }
 }

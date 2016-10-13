@@ -20,21 +20,24 @@ public class Importer {
         MysqlManager mysqlManager = MysqlManager.getInstance();
         try{
             Connection conn = mysqlManager.getConnection();
-            String sql = "select * from categorys where species=\"" + species.toString() + "\"";
+            String sql = "select * from category where species=\"" + species.toString() + "\"";
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
             List<Category> categories = new ArrayList<Category>();
             while(rs.next()){
                 Category cat = new Category();
-                cat.setSpecies(Species.getFromName(rs.getString(1)));
-                cat.setType(rs.getInt(2));
-                cat.setUrl(rs.getString(4));
-                cat.setAmount(rs.getInt(5));
-                cat.setLevel(rs.getInt(6));
-                cat.setLeaf(rs.getBoolean(7));
-                cat.setCat1name(rs.getString(8));
-                cat.setCat2name(rs.getString(9));
-                cat.setCat3name(rs.getString(10));
+                int index = 0;
+                cat.setCategoryid(rs.getInt(++index));
+                cat.setSpecies(Species.getFromName(rs.getString(++index)));
+                cat.setType(rs.getInt(++index));
+                ++index;
+                cat.setUrl(rs.getString(++index));
+                cat.setAmount(rs.getInt(++index));
+                cat.setLevel(rs.getInt(++index));
+                cat.setLeaf(rs.getBoolean(++index));
+                cat.setCat1name(rs.getString(++index));
+                cat.setCat2name(rs.getString(++index));
+                cat.setCat3name(rs.getString(++index));
                 cat.setName(cat.getLevel() == 1 ? cat.getCat1name() : (cat.getLevel() == 2 ? cat.getCat2name() : cat.getCat3name()));
                 cat.setParent(cat.getLevel() == 1 ? "" : (cat.getLevel() == 2 ? cat.getCat1name() : cat.getCat2name()));
                 categories.add(cat);
