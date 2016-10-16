@@ -1,7 +1,12 @@
 package com.iread.spider;
 
+import com.iread.bean.Species;
+import com.iread.conf.ConfMan;
 import com.iread.parser.AmazonBookParser;
+import com.iread.util.CategoryHelper;
+import org.apache.log4j.PropertyConfigurator;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Calendar;
@@ -10,6 +15,12 @@ import java.util.Calendar;
  * Created by liu on 16/10/3.
  */
 public class AmazonBookParserTest {
+    @BeforeClass
+    public static void setUp() {
+        PropertyConfigurator.configure(new ConfMan().DEFAULT_CONF_PATH);
+        CategoryHelper.init(Species.AMAZON);
+    }
+
     @Test
     public void testParseDate() {
         String dateStr = "2016年9月28日";

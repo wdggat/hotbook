@@ -5,6 +5,7 @@ import com.iread.bean.BookPreview;
 import com.iread.bean.Category;
 import com.iread.bean.Species;
 import com.iread.conf.ConfMan;
+import com.iread.util.CategoryHelper;
 import org.apache.log4j.PropertyConfigurator;
 import org.jsoup.nodes.Document;
 import org.junit.Assert;
@@ -25,6 +26,7 @@ public class AmazonSpiderTest {
     @BeforeClass
     public static void init() {
         PropertyConfigurator.configure(ConfMan.DEFAULT_CONF_PATH);
+        CategoryHelper.init(Species.AMAZON);
         conf = new ConfMan();
         amazonSpider = new AmazonSpider(conf);
     }
@@ -81,6 +83,40 @@ public class AmazonSpiderTest {
         Assert.assertTrue(book.getAsin().length() > 5);
         Assert.assertTrue(book.getDescription().length() > 5);
         Assert.assertTrue(book.getCatalog().length() > 5);
+    }
+
+    @Test
+    public void testFetchBook_paperback_noComment() throws IOException {
+        String url = "https://www.amazon.cn/%E6%BA%90%E6%B0%8F%E7%89%A9%E8%AF%AD-%E7%B4%AB%E5%BC%8F%E9%83%A8/dp/B013JFQFF6/ref=lp_2130608051_1_2_twi_har_2/454-1759273-4201302?s=books&ie=UTF8&qid=1476546480&sr=1-2";
+        BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "ASIN_test", "TITLE_test_源氏物语", "2016年4月", null, url, null, 10000f, 10f, 100);
+        Book book = amazonSpider.fetchBook(bookPreview);
+        System.out.println(book.toString());
+        Assert.assertNotNull(book);
+        Assert.assertTrue(book.getAsin().length() > 5);
+        Assert.assertTrue(book.getDescription().length() > 5);
+        Assert.assertTrue(book.getCatalog().length() > 5);
+    }
+
+    @Test
+    public void testFetchBook_paperback_alsobuyNoprice() throws IOException {
+        String url = "https://www.amazon.cn/%E8%8B%8F%E8%8F%B2%E7%9A%84%E4%B8%96%E7%95%8C-%E4%B9%94%E6%96%AF%E5%9D%A6%E2%80%A2%E8%B4%BE%E5%BE%B7/dp/B0011F5QPC/ref=lp_2130608051_1_4_twi_pap_1/454-1759273-4201302?s=books&ie=UTF8&qid=1476546480&sr=1-4";
+        BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "ASIN_test", "TITLE_test_苏菲的世界", "2016年4月", null, url, null, 10000f, 10f, 100);
+        Book book = amazonSpider.fetchBook(bookPreview);
+        System.out.println(book.toString());
+        Assert.assertNotNull(book);
+        Assert.assertTrue(book.getAsin().length() > 5);
+        Assert.assertTrue(book.getDescription().length() > 5);
+        Assert.assertTrue(book.getCatalog().length() > 5);
+    }
+
+    @Test
+    public void testFetchBook_paperback_nobuytogether() throws IOException {
+        String url = "https://www.amazon.cn/Fathers-and-Children-Turgenev-Ivan/dp/0679405364/ref=lp_2130608051_1_41_twi_har_2/454-1759273-4201302?s=books&ie=UTF8&qid=1476546480&sr=1-41";
+        BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "ASIN_test", "TITLE_test_父与子", "2016年4月", null, url, null, 10000f, 10f, 100);
+        Book book = amazonSpider.fetchBook(bookPreview);
+        System.out.println(book.toString());
+        Assert.assertNotNull(book);
+        Assert.assertTrue(book.getAsin().length() > 5);
     }
 
     @Test

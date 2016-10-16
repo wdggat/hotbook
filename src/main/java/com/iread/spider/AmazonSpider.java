@@ -287,7 +287,7 @@ public class AmazonSpider extends Spider {
                     String language = text.replaceFirst("语种", "").replace(":", "").replace("：", "");
                     book.setLanguage(language.trim());
                 } else if (text.startsWith("开本:")) {
-                    String size = text.replaceFirst("开本:", "").trim();
+                    String size = text.replaceAll("(开本:|开)", "").trim();
                     book.setSize(Integer.parseInt(size));
                 } else if (text.startsWith("ISBN:")) {
                     book.setIsbn(text.replaceFirst("ISBN:", "").trim());
@@ -300,16 +300,17 @@ public class AmazonSpider extends Spider {
                     book.setWidth(Double.parseDouble(cms[1].trim()));
                     book.setHeight(Double.parseDouble(cms[2].trim()));
                 } else if (text.startsWith("商品重量:")) {
-                    String weight = text.replaceFirst("商品重量:", "").replace("Kg", "").trim();
-                    book.setWeight(Double.parseDouble(weight.trim()));
+                    book.setWeight(AmazonBookParser.getWeight(text));
                 } else if (text.startsWith("品牌:")) {
                     book.setBrand(text.replaceFirst("品牌:", "").trim());
                 } else if (text.startsWith("ASIN:")) {
                     book.setAsin(text.replace("ASIN:", "").trim());
                 }
-                book.setImgUrls(AmazonBookParser.getImgUrls(document));
-                //商品描述
-                Element contents = document.getElementById("s_contents");
+            }
+            book.setImgUrls(AmazonBookParser.getImgUrls(document));
+            //商品描述
+            Element contents = document.getElementById("s_contents");
+            if (contents != null) {
                 String descUrl = HOST + contents.attr("descUrl");
                 BookDescription desc = new BookDescription(book, descUrl);
                 AmazonBookDescParser.parseBookDesc(desc);

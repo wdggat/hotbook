@@ -31,4 +31,5 @@ public class AmazonKindleParser extends AmazonBookParser {
         imgs.add(imgEl.attr("src"));
         return imgs;
     }
+
 }

@@ -2,8 +2,7 @@ package com.iread.parser;
 
 import com.iread.bean.*;
 import com.iread.spider.AmazonSpider;
-import org.apache.commons.beanutils.converters.IntegerArrayConverter;
-import org.apache.commons.collections.map.HashedMap;
+import com.iread.util.CategoryHelper;
 import org.apache.commons.lang.StringUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -90,17 +89,21 @@ public class AmazonBookParser extends SpiderParser {
             alsoBuySuggest.setImgUrl(imgEl.attr("src"));
             Elements spans = el.select("span");
             alsoBuySuggest.setAuthor(spans.first().text());
-            String wrap = spans.get(spans.size() - 2).text();
+            Element wrapEl = el.getElementsByClass("a-size-small").last();
+            String wrap = wrapEl.text();
             alsoBuySuggest.setWrapType(WrapType.getFromName(wrap));
-            String price = spans.last().text();
-            alsoBuySuggest.setPrice(priceCast(price));
+            Element priceEl = el.getElementsByClass("a-color-price").first();
+            if (priceEl != null) {
+                String price = priceEl.text();
+                alsoBuySuggest.setPrice(priceCast(price));
+            }
 
             Elements iconEls = el.getElementsByClass("a-icon-row");
             if(!iconEls.isEmpty()) {
                 String starStr = iconEls.first().select("span").first().text();
                 alsoBuySuggest.setStar(starClean(starStr));
                 Element lastA = iconEls.first().select("a").last();
-                alsoBuySuggest.setCommentNum(Integer.parseInt(lastA.text()));
+                alsoBuySuggest.setCommentNum(parseInt(lastA.text()));
             }
             alsoBuySuggests.add(alsoBuySuggest);
         }
@@ -113,6 +116,9 @@ public class AmazonBookParser extends SpiderParser {
     public static ArrayList<Suggest> getBuyTogether(Document document) {
         ArrayList<Suggest> buyTogether = new ArrayList<Suggest>();
         Element imageUl = document.getElementsByClass("sims-fbt-image-box").first();
+        if(imageUl == null) {
+            return buyTogether;
+        }
         Elements imgEls = imageUl.select("img");
         for(int i = 1; i< imgEls.size(); i ++) {
             Suggest suggest = new Suggest();
@@ -165,8 +171,9 @@ public class AmazonBookParser extends SpiderParser {
 
     public static int getRankAll(Document document) {
         Element rankEl = document.getElementById("SalesRank");
-        String randStr = StringUtils.substringBetween(rankEl.text(), "商品里排第", "名");
-        return Integer.parseInt(randStr);
+        String rankStr = StringUtils.substringBetween(rankEl.text(), "商品里排第", "名");
+        rankStr = rankStr.replace(",", "");
+        return parseInt(rankStr);
     }
 
     public static HashMap<Category, Integer> getRankCats(Element detailBulletsEl) {
@@ -175,7 +182,7 @@ public class AmazonBookParser extends SpiderParser {
         for(Element rankCatEl : rankCatEls) {
             String rankText = rankCatEl.select("span").first().text();
             String rankStr = StringUtils.substringBetween(rankText, "第", "位");
-            Integer rank = Integer.parseInt(rankStr);
+            Integer rank = parseInt(rankStr);
             Elements aEls = rankCatEl.select("a");
             for (int i = 0; i< aEls.size(); i++) {
                 String text = aEls.get(i).text();
@@ -194,7 +201,8 @@ public class AmazonBookParser extends SpiderParser {
             category.setCat3name(cat3);
             category.setUrl(url);
             category.setType(Category.TYPE_NORMAL);
-            rankCats.put(category, rank);
+            Category catInDb = CategoryHelper.getCategoryByName(category.getCatFullName());
+            rankCats.put(catInDb, rank);
         }
         return rankCats;
     }
@@ -204,7 +212,8 @@ public class AmazonBookParser extends SpiderParser {
         Element histogramEl = document.getElementById("histogramTable");
         for(Element histogramRow : histogramEl.getElementsByClass("a-histogram-row")) {
             Element commentNumEl = histogramRow.getElementsByClass("a-nowrap").last();
-            starGroups.add(Integer.parseInt(commentNumEl.text()));
+            String star = StringUtils.isBlank(commentNumEl.text()) ? "0" : commentNumEl.text();
+            starGroups.add(parseInt(star));
         }
         return starGroups;
     }
@@ -212,12 +221,15 @@ public class AmazonBookParser extends SpiderParser {
     public static ArrayList<Comment> getComments(Document document) {
         ArrayList<Comment> comments = new ArrayList<Comment>();
         Element parentEl = document.getElementById("revMH");
+        if (parentEl == null) {
+            return comments;
+        }
         for(Element commentEl : parentEl.getElementsByAttributeValueStarting("id", "rev-")) {
             Comment comment = new Comment();
             comment.setId(commentEl.id());
             Element iconEl = commentEl.getElementsByClass("a-icon-star").first();
             String starS = StringUtils.substringBetween(iconEl.text(), "平均", ".0");
-            comment.setStar(Integer.parseInt(starS));
+            comment.setStar(parseInt(starS));
             Element titleEl = commentEl.getElementsByClass("a-icon-row").select("span").last();
             comment.setTitle(titleEl.text());
             Element commentatorEl = commentEl.getElementsByAttributeValueContaining("href", "profile.amazon").first();
@@ -232,7 +244,7 @@ public class AmazonBookParser extends SpiderParser {
             Elements praiseEls = commentEl.getElementsByClass("cr-vote-buttons");
             if(!praiseEls.isEmpty()) {
                 String praiseS = StringUtils.substringBetween(praiseEls.text(), "", "个人发现此评论有用");
-                comment.setPraise(praiseS == null ? 0 : Integer.parseInt(praiseS.trim()));
+                comment.setPraise(praiseS == null ? 0 : parseInt(praiseS));
             }
             comments.add(comment);
         }
@@ -241,12 +253,29 @@ public class AmazonBookParser extends SpiderParser {
 
     public static String getPosterUrl(Document document) {
         Element descEl = document.getElementById("bookDescription_feature_div");
+        if (descEl == null) {
+            return null;
+        }
         Element imgEl = descEl.select("img").first();
+        if (imgEl == null) {
+            return null;
+        }
         return imgEl.attr("src");
     }
 
     public static String getAsinFromUrl(String url) {
         return StringUtils.substringBetween(url, "/dp/", "/");
+    }
+
+    public static double getWeight(String text) {
+        if (text.contains("Kg")) {
+            String weight = text.replaceFirst("商品重量:", "").replace("Kg", "").trim();
+            return Double.parseDouble(weight);
+        } else if (text.contains("g")) {
+            String weight = text.replaceFirst("商品重量:", "").replace("g", "").trim();
+            return Double.parseDouble("0." + weight);
+        }
+        return 0;
     }
 
     /*public static String getImgUrl(Document document) {

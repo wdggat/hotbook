@@ -48,6 +48,7 @@ public class Book {
     private String digest;
     private ArrayList<Integer> starGroups; //5星，4星，...
     private List<Comment> comments;
+    private String bookid;
 
     public Species getSpecies() {
         return species;
@@ -371,6 +372,14 @@ public class Book {
 
     public String toJsonStr() {
         return JSON.toJSONString(this);
+    }
+
+    public String getBookid() {
+        return getSpecies().equals(Species.AMAZON) ? getAsin() : getIsbn();
+    }
+
+    public void setBookid(String bookid) {
+        this.bookid = bookid;
     }
 
     @Override

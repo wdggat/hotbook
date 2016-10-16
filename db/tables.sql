@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS spider_work_sheet (
 
 -- MYSQL OR HIVE ?
 CREATE TABLE IF NOT EXISTS book (
-  id varchar(100) not null primary key
+  id varchar(100) not null primary key,
   species varchar(10) NOT NULL COMMENT 'AMAZON/JD..',
   title varchar(1000) NOT NULL COMMENT '书标题',
   wraptype varchar(20) COMMENT 'PAPERBACK/HARDBACK/KINDLE',
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS book (
   categoryid int COMMENT '类目id',
   seller varchar(100) COMMENT '卖家',
   price float,
-  description varchar(10000),
+  description text,
   posterUrl varchar(2000),
   imgUrls varchar(2000),
   publisher varchar(200),
@@ -51,22 +51,21 @@ CREATE TABLE IF NOT EXISTS book (
   weight float,
   brand varchar(200),
   asin varchar(100) not null,
-  editorSuggest varchar(50000),
-  celebritySuggest varchar(50000),
-  mediaSuggest varchar(50000),
-  authorIntro varchar(50000),
-  catalog varchar(10000),
-  preface varchar(10000),
-  digest varchar(10000),
+  editorSuggest text,
+  celebritySuggest text,
+  mediaSuggest text,
+  authorIntro text,
+  catalog text,
+  preface text,
+  digest text,
   starGroups varchar(100)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS rank (
   bookid varchar(100),
-  categoryid varchar(100),
+  categoryid int,
   rank int,
   primary key(bookid, categoryid)
-  --unique key `unique_rank`('bookid', 'categoryid')
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='排名';
 
 CREATE TABLE IF NOT EXISTS suggest (

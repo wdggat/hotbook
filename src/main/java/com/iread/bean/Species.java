@@ -7,7 +7,7 @@ public enum Species {
     AMAZON;
 
     public static Species getFromName(String name) {
-        if(name.equals("amazon")) {
+        if(name.equalsIgnoreCase("amazon")) {
             return Species.AMAZON;
         }
         return null;

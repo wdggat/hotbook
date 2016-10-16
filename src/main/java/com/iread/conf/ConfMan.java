@@ -39,6 +39,10 @@ public class ConfMan {
 		return Integer.parseInt(properties.getProperty("delay_init", "0"));
 	}
 
+	public int getExecPeriod() {
+		return Integer.parseInt(properties.getProperty("exec_period"));
+	}
+
 	public int getAmazonBooknumPerCat() {
 		return Integer.parseInt(properties.getProperty("amazon_booknum_per_cat"));
 	}
