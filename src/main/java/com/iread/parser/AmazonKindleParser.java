@@ -15,6 +15,9 @@ import java.util.ArrayList;
 public class AmazonKindleParser extends AmazonBookParser {
     public static String getBookDesc(Document document) {
         String bookDescEnc = StringUtils.substringBetween(document.toString(), "bookDescEncodedData = \"", "\",");
+        if (bookDescEnc == null) {
+            return "";
+        }
         String bookDesc = null;
         try {
             bookDesc = URLDecoder.decode(bookDescEnc, "utf-8");

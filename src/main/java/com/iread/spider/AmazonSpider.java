@@ -6,13 +6,16 @@ import com.iread.parser.AmazonBookDescParser;
 import com.iread.parser.AmazonBookParser;
 import com.iread.parser.AmazonKindleParser;
 import com.iread.parser.SpiderParser;
+import com.iread.util.UrlUtil;
 import com.iread.util.WBListHelper;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -198,10 +201,13 @@ public class AmazonSpider extends Spider {
             for(Element el : linkEl.select("a")) {
                 if(el.text().contains("电子书")) {
                     kindleUrl = AmazonBookParser.getHrefInElement(el);
+                    kindleUrl = kindleUrl.startsWith("http") ? kindleUrl : HOST + kindleUrl;
                 } else if(el.text().contains("平装")) {
                     paperbackUrl = AmazonBookParser.getHrefInElement(el);
+                    paperbackUrl = paperbackUrl.startsWith("http") ? paperbackUrl : HOST + paperbackUrl;
                 } else if(el.text().contains("精装")) {
                     hardbackUrl = AmazonBookParser.getHrefInElement(el);
+                    hardbackUrl = hardbackUrl.startsWith("http") ? hardbackUrl : HOST + hardbackUrl;
                 }
             }
             float star = 0;
@@ -218,7 +224,11 @@ public class AmazonSpider extends Spider {
             }
             BookPreview bookPreview = new BookPreview(Species.AMAZON, order, asin, title, onloadTime, kindleUrl, paperbackUrl, hardbackUrl, price, star, voteNum);
             bookPreview.setCategory(category);
-            bookPreviews.add(bookPreview);
+            if (StringUtils.isBlank(bookPreview.getUrl()) || !bookPreview.getUrl().startsWith("http")) {
+                logger.error("illegal url preview, " + bookPreview + ", category = " + category + ", page = " + page);
+            } else {
+                bookPreviews.add(bookPreview);
+            }
             order ++;
             logger.debug("Got book preview: " + bookPreview.toString());
         }
@@ -226,12 +236,36 @@ public class AmazonSpider extends Spider {
     }
 
     public Book fetchBook(BookPreview bookPreview) throws IOException {
+        Book book = null;
+        try {
+            book = fetchBookNoretry(bookPreview);
+        } catch (NullPointerException e) {
+            logger.error("fetch book failed: " + bookPreview.toJsonStr(), e);
+            logger.info("Del and try again, " + bookPreview.getStoreFilename());
+            FileUtils.forceDelete(new File(Spider.getCompPath(bookPreview)));
+            book = fetchBookNoretry(bookPreview);
+        }
+        return book;
+    }
+
+    public Book fetchBookNoretry(BookPreview bookPreview) throws IOException {
         Document document = fetchDocument(bookPreview);
+        // searchRefused
+        if (document == null) {
+            sleep(60);
+            document = fetchDocument(bookPreview);
+        }
         Book book = new Book();
         book.setSpecies(Species.AMAZON);
         book.setTitle(bookPreview.getTitle());
         book.setWrapType(bookPreview.getTopWrapType());
+        book.setAsin(bookPreview.getAsin());
         book.setStar(bookPreview.getStar());
+        if (bookPreview.getUrl().startsWith("https://www.amazon.cn/gp/slredirect/")) {
+            book.setUrl(UrlUtil.extractParamUrl(bookPreview.getUrl(), "url"));
+        } else {
+            book.setUrl(bookPreview.getUrl());
+        }
         book.setCommentNum(bookPreview.getVoteNum());
         book.setCategory(bookPreview.getCategory());
         ArrayList<String> authors = AmazonBookParser.getAuthors(document, "作者");

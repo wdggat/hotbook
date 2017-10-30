@@ -23,6 +23,11 @@ public class CategoryPage extends Storable {
         return category.getStoreFilename() + "_page-" + page;
     }
 
+    @Override
+    public int getMinSize() {
+        return 1000;
+    }
+
     public String getUrl() {
         return category.getUrl() + "&page=" + page;
     }

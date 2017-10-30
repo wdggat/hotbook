@@ -37,11 +37,21 @@ public class AmazonBookParser extends SpiderParser {
     public static double getPrice(Document document) {
         Element priceEl = document.getElementsByClass("a-color-price").first();
         String priceStr = priceEl.text().replace("￥", "");
+        if(priceStr.contains("无货")) {
+            return 0;
+        }
+        if(priceStr.contains("-")) {
+            priceStr = StringUtils.substringAfter(priceStr, "-");
+        }
         return Double.parseDouble(priceStr.trim());
     }
 
     public static String getSeller(Document document) {
-        Elements sellerEls = document.getElementById("ddmMerchantMessage").select("a");
+        Element merchantEl = document.getElementById("ddmMerchantMessage");
+        if (merchantEl == null) {
+            return "亚马逊";
+        }
+        Elements sellerEls = merchantEl.select("a");
         if (!sellerEls.isEmpty()) {
             return sellerEls.first().text();
         }
@@ -55,11 +65,11 @@ public class AmazonBookParser extends SpiderParser {
     }
 
     public static List<String> getImgUrls(Document document) {
-        Element imgEl = document.getElementById("imgThumbs");
+        Element imgEl = document.getElementById("imgBlkFront");
         List<String> imgUrls = new ArrayList<String>();
-        for(Element el : imgEl.select("img")) {
-            imgUrls.add(el.attr("src"));
-        }
+        String imgAttr = imgEl.attr("data-a-dynamic-image");
+        String imgUrl = StringUtils.substringBetween(imgAttr, "{\"", "\"");
+        imgUrls.add(imgUrl);
         return imgUrls;
     }
 
@@ -82,6 +92,9 @@ public class AmazonBookParser extends SpiderParser {
             alsoBuySuggest.setSuggestType(SuggestType.ALSOBUY);
             String url = AmazonSpider.HOST + getHrefInElement(el.select("a").first());
             Element imgEl = el.select("img").first();
+            if (imgEl == null) {
+                continue;
+            }
             alsoBuySuggest.setTitle(imgEl.attr("alt"));
             alsoBuySuggest.setUrl(url);
             String asin = getAsinFromUrl(url);
@@ -171,6 +184,9 @@ public class AmazonBookParser extends SpiderParser {
 
     public static int getRankAll(Document document) {
         Element rankEl = document.getElementById("SalesRank");
+        if (rankEl == null) {
+            return 0;
+        }
         String rankStr = StringUtils.substringBetween(rankEl.text(), "商品里排第", "名");
         rankStr = rankStr.replace(",", "");
         return parseInt(rankStr);
@@ -233,8 +249,12 @@ public class AmazonBookParser extends SpiderParser {
             Element titleEl = commentEl.getElementsByClass("a-icon-row").select("span").last();
             comment.setTitle(titleEl.text());
             Element commentatorEl = commentEl.getElementsByAttributeValueContaining("href", "profile.amazon").first();
-            String commentator = commentatorEl.text();
-            comment.setAuthor(commentator);
+            if(commentatorEl == null) {
+                comment.setAuthor("");
+            } else {
+                String commentator = commentatorEl.text();
+                comment.setAuthor(commentator);
+            }
             Element dateEl = commentEl.getElementsMatchingOwnText(Pattern.compile("([0-9]+)年([0-9]+)月([0-9]+)日")).first();
             String dateStr = StringUtils.substringBetween(dateEl.toString(), "于", "</span>");
             comment.setDate(parseDate(dateStr.trim()));
@@ -264,7 +284,12 @@ public class AmazonBookParser extends SpiderParser {
     }
 
     public static String getAsinFromUrl(String url) {
-        return StringUtils.substringBetween(url, "/dp/", "/");
+        if (url.contains("/dp/")) {
+            return StringUtils.substringBetween(url, "/dp/", "/");
+        } else if (url.contains("/product/")) {
+            return StringUtils.substringBetween(url, "/product/", "/");
+        }
+        return null;
     }
 
     public static double getWeight(String text) {

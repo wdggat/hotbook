@@ -157,6 +157,11 @@ public class BookPreview extends Storable{
         return "book_" + species + "_" + title + "_" + asin;
     }
 
+    @Override
+    public int getMinSize() {
+        return 10000;
+    }
+
     /**
      * 接优先级取一个url, 精装，平装，kindle
      * @return

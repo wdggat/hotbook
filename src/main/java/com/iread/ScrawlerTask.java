@@ -9,11 +9,8 @@ import com.iread.spider.Spider;
 import com.iread.util.CategoryHelper;
 import com.iread.util.Exporter;
 import com.iread.util.Importer;
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,11 +44,18 @@ public class ScrawlerTask implements Runnable {
                 for (BookPreview bookPreview : previews) {
                     logger.debug("begin to get book of : " + bookPreview.toJsonStr());
                     Book book = spider.fetchBook(bookPreview);
+                    book.setCategory(category);
                     books.add(book);
                     logger.info(book.getSpecies() + " " + category.getCatFullName() + " fetched book : " + book.getTitle());
+                    if (books.size() == 200) {
+                        Exporter.exportBooks(books);
+                        logger.info(category.getSpecies() + " " + category.getCatFullName() + " exported books num : " + books.size());
+                        books.clear();
+                    }
                 }
                 Exporter.exportBooks(books);
                 logger.info(category.getSpecies() + " " + category.getCatFullName() + " exported books num : " + books.size());
+                return;
             }
         } catch (Throwable e) {
             logger.error("Something wrong happens during spider running:",

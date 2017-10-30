@@ -53,14 +53,20 @@ public abstract class Spider {
             html = clientVM.get(storable.getUrl());
             File decomF = new File(decomPath);
             FileUtils.write(decomF, html, false);
-            if(decomF.length() < 10240) {
+            if(decomF.length() < storable.getMinSize()) {
                 logger.fatal("url request failed, file empty, " + storable.toString());
+                return null;
             }
             GzipUtil.compress(decomF);
         } else {
             html = GzipUtil.readCompress(comF);
         }
         return Jsoup.parse(html);
+    }
+
+    public static String getCompPath(Storable storable) {
+        String decomPath = conf.getWarehouse(storable.getSpecies()) + "/" + storable.getStoreFilename();
+        return decomPath + GzipUtil.EXT;
     }
 
     private static Document fetchDocumentDecompress(Storable storable) throws IOException {
@@ -77,6 +83,15 @@ public abstract class Spider {
 
     protected static boolean expired(File file) {
         return (System.currentTimeMillis() - file.lastModified()) / 86400000 >= conf.getShelflife();
+    }
+
+    protected static void sleep(long seconds) {
+        try {
+            logger.info("spider sleep for " + seconds + " seconds");
+            Thread.sleep(seconds * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }

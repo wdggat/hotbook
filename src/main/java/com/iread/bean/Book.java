@@ -49,6 +49,7 @@ public class Book {
     private ArrayList<Integer> starGroups; //5星，4星，...
     private List<Comment> comments;
     private String bookid;
+    private String url;
 
     public Species getSpecies() {
         return species;
@@ -382,6 +383,14 @@ public class Book {
         this.bookid = bookid;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
     @Override
     public String toString() {
         return "Book{" +
@@ -425,6 +434,8 @@ public class Book {
                 ", digest='" + digest + '\'' + "\n" +
                 ", starGroups=" + starGroups + "\n" +
                 ", comments=" + comments + "\n" +
+                ", bookid='" + bookid + '\'' + "\n" +
+                ", url='" + url + '\'' + "\n" +
                 '}';
     }
 }

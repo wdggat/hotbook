@@ -2,6 +2,8 @@ package com.iread.util;
 
 import com.iread.bean.*;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggerFactory;
 import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.classmodel.reflect.ArchiveAdapter;
 
@@ -15,6 +17,8 @@ import java.util.Map;
  * Created by liu on 16/9/26.
  */
 public class Exporter {
+    private static final Logger logger = Logger.getLogger(Exporter.class);
+
     public static int exportCategorys(Collection<Category> categories) throws SQLException {
         MysqlManager mysqlManager = MysqlManager.getInstance();
         Connection conn = mysqlManager.getConnection();
@@ -42,6 +46,7 @@ public class Exporter {
     }
 
     public static int exportBooks(Collection<Book> books) throws SQLException {
+        exam(books);
         exportBooksNoAttach(books);
         for (Book book : books) {
             exportRank(book);
@@ -61,11 +66,19 @@ public class Exporter {
         return books.size();
     }
 
+    private static void exam(Collection<Book> books) {
+        for (Book book : books) {
+            if (book.getUrl().length() > 1000) {
+                logger.warn("URL TOO LONG : " + book.toJsonStr());
+            }
+        }
+    }
+
     private static int exportBooksNoAttach(Collection<Book> books) throws SQLException {
         MysqlManager mysqlManager = MysqlManager.getInstance();
         Connection conn = mysqlManager.getConnection();
-        String sql = "insert into book values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE " +
-                "commentNum=VALUES(commentNum),price=VALUES(price),starGroups=VALUES(starGroups);";
+        String sql = "insert into book values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE " +
+                "commentNum=VALUES(commentNum),price=VALUES(price),starGroups=VALUES(starGroups),imgUrls=VALUES(imgUrls),url=VALUES(url);";
         PreparedStatement ps = conn.prepareStatement(sql);
         conn.setAutoCommit(false);
         for (Book book : books) {
@@ -82,12 +95,12 @@ public class Exporter {
         ps.setString(++index, book.getSpecies().toString());
         ps.setString(++index, book.getTitle());
         ps.setString(++index, book.getWrapType().toString());
-        ps.setDate(++index, new Date(book.getOnloadDate().getTimeInMillis()));
+        ps.setDate(++index, new Date(book.getOnloadDate() == null ? 0 : book.getOnloadDate().getTimeInMillis()));
         ps.setString(++index, StringUtils.join(book.getAuthor().iterator(), ','));
         ps.setString(++index, StringUtils.join(book.getTranslator().iterator(), ','));
         ps.setFloat(++index, (float) book.getStar());
         ps.setInt(++index, book.getCommentNum());
-        ps.setInt(++index, book.getCategory().getCategoryid());
+        ps.setInt(++index, book.getCategory() == null ? -1 : book.getCategory().getCategoryid());
         ps.setString(++index, book.getSeller());
         ps.setFloat(++index, (float) book.getPrice());
         ps.setString(++index, book.getDescription());
@@ -113,6 +126,7 @@ public class Exporter {
         ps.setString(++index, book.getPreface());
         ps.setString(++index, book.getDigest());
         ps.setString(++index, StringUtils.join(book.getStarGroups().iterator(), ','));
+        ps.setString(++index, book.getUrl());
         ps.addBatch();
     }
 
@@ -183,7 +197,8 @@ public class Exporter {
             ps.setDate(++index, new Date(comment.getDate().getTimeInMillis()));
             ps.setString(++index, comment.getTitle());
             ps.setString(++index, comment.getAuthor());
-            ps.setString(++index, comment.getContent());
+            String content = org.apache.commons.codec.binary.StringUtils.newStringUtf8(comment.getContent().getBytes());
+            ps.setString(++index, content);
             ps.setInt(++index, comment.getPraise());
             ps.addBatch();
         }

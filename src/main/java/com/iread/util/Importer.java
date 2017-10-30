@@ -20,7 +20,7 @@ public class Importer {
         MysqlManager mysqlManager = MysqlManager.getInstance();
         try{
             Connection conn = mysqlManager.getConnection();
-            String sql = "select * from category where cat1name='小说' and (level=3 or isleaf=1) and species=\"" + species.toString() + "\" and cat1name in (select value from wblist where type='1')";
+            String sql = "select * from category where (level=3 or isleaf=1) and species=\"" + species.toString() + "\" and cat1name in (select value from wblist where type='1')";
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
             List<Category> categories = new ArrayList<Category>();

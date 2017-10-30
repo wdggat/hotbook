@@ -86,4 +86,24 @@ public class BookDescription extends Storable {
     public Species getSpecies() {
         return book.getSpecies();
     }
+
+    @Override
+    public int getMinSize() {
+        return 2000;
+    }
+
+    @Override
+    public String toString() {
+        return "BookDescription{" +
+                "editorSuggest='" + editorSuggest + '\'' + "\n" +
+                ", celebritySuggest='" + celebritySuggest + '\'' + "\n" +
+                ", mediaSuggest='" + mediaSuggest + '\'' + "\n" +
+                ", authorIntro='" + authorIntro + '\'' + "\n" +
+                ", catalog='" + catalog + '\'' + "\n" +
+                ", preface='" + preface + '\'' + "\n" +
+                ", digest='" + digest + '\'' + "\n" +
+                ", url='" + url + '\'' + "\n" +
+                ", book=" + book + "\n" +
+                '}';
+    }
 }

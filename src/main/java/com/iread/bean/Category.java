@@ -137,7 +137,7 @@ public class Category extends Storable{
     }
 
     public String getCatFullName() {
-        return cat1name + "|" + cat2name + "|" + cat3name;
+        return cat1name + "|" + cat2name + "|" + (cat3name == null ? "" : cat3name);
     }
 
     public int getCategoryid() {
@@ -146,6 +146,11 @@ public class Category extends Storable{
 
     public void setCategoryid(int categoryid) {
         this.categoryid = categoryid;
+    }
+
+    @Override
+    public int getMinSize() {
+        return 1000;
     }
 
     @Override

@@ -17,21 +17,28 @@ public class AmazonBookDescParser {
         Element contents = document.getElementById("s_contents");
         for (Element contentEl : contents.getElementsByClass("s-content")) {
             String h3 = contentEl.child(0).text();
-            String content = contentEl.child(1).text().trim();
+            String content = contentEl.text().trim();
             if(h3.startsWith("编辑推荐")) {
-                desc.setEditorSuggest(content);
+                content = content.substring(4);
+                desc.setEditorSuggest(content.trim());
             } else if (h3.startsWith("媒体推荐")) {
-                desc.setMediaSuggest(content);
+                content = content.substring(4);
+                desc.setMediaSuggest(content.trim());
             } else if (h3.startsWith("名人推荐")) {
-                desc.setCelebritySuggest(content);
+                content = content.substring(4);
+                desc.setCelebritySuggest(content.trim());
             } else if (h3.startsWith("作者简介")) {
-                desc.setAuthorIntro(content);
+                content = content.substring(4);
+                desc.setAuthorIntro(content.trim());
             } else if (h3.startsWith("目录")) {
-                desc.setCatalog(content);
+                content = content.substring(2);
+                desc.setCatalog(content.trim());
             } else if (h3.startsWith("序言")) {
-                desc.setPreface(content);
+                content = content.substring(2);
+                desc.setPreface(content.trim());
             } else if (h3.startsWith("文摘")) {
-                desc.setDigest(content);
+                content = content.substring(2);
+                desc.setDigest(content.trim());
             }
         }
     }
