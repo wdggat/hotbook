@@ -200,4 +200,14 @@ public class AmazonSpiderTest {
         Assert.assertNotNull(book);
         Assert.assertTrue(book.getDescription().length() > 5);
     }
+
+    @Test
+    public void testFetchBook_exception_20171108() throws IOException {
+        String url = "https://www.amazon.cn/%E5%8C%97%E6%B4%8B%E5%A4%9C%E8%A1%8C%E8%AE%B0-%E9%87%91%E9%86%89/dp/B0766DYZ2F/ref=lp_658495051_1_1_twi_pap_1/460-7445851-5211369?s=books&ie=UTF8&qid=1509938924&sr=1-1";
+        BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "B0766DYZ2F", "北洋夜行记(亚马逊独家亲笔签名版)(附语音名片)", "2016年4月", null, url, null, 10000f, 10f, 100);
+        Book book = amazonSpider.fetchBookNoretry(bookPreview);
+        System.out.println(book.toString());
+        Assert.assertNotNull(book);
+        Assert.assertTrue(book.getAsin().length() > 5);
+    }
 }

@@ -39,22 +39,32 @@ public abstract class Spider {
         return Jsoup.parse(content);
     }
 
-    public static Document fetchDocument(Storable storable) throws IOException {
-        return fetchDocumentCompress(storable);
+    /**
+     *
+     * @param storable
+     * @param delOldFile 是否判断过期时间，删除旧文件
+     * @return
+     * @throws IOException
+     */
+    public static Document fetchDocument(Storable storable, boolean delOldFile) throws IOException {
+        return fetchDocumentCompress(storable, true);
     }
 
-    private static Document fetchDocumentCompress(Storable storable) throws IOException {
+    private static Document fetchDocumentCompress(Storable storable, Boolean delOldFile) throws IOException {
         String decomPath = conf.getWarehouse(storable.getSpecies()) + "/" + storable.getStoreFilename();
         String comPath = decomPath + GzipUtil.EXT;
         File comF = new File(comPath);
         String html = null;
         // 文件不存在或已过期
-        if(!comF.exists() || expired(comF)) {
+        if(!comF.exists() || (expired(comF) && delOldFile) || isFileEmpty(comF)) {
             html = clientVM.get(storable.getUrl());
             File decomF = new File(decomPath);
-            FileUtils.write(decomF, html, false);
+            if (html.length() > storable.getMinSize()) {
+                FileUtils.write(decomF, html, false);
+            }
             if(decomF.length() < storable.getMinSize()) {
-                logger.fatal("url request failed, file empty, " + storable.toString());
+                logger.fatal("url request failed, file.length()=" + decomF.length() + ", file empty, " + storable.toString());
+                logger.fatal(html);
                 return null;
             }
             GzipUtil.compress(decomF);
@@ -92,6 +102,10 @@ public abstract class Spider {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    private static boolean isFileEmpty(File file) {
+        return FileUtils.sizeOf(file) < 10240;
     }
 
 }

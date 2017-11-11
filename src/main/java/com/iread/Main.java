@@ -23,6 +23,7 @@ public class Main {
 
     private static ConfMan conf;
 
+    @Deprecated
     private static void scheduleScrawlers(Species species) {
         Scheduler scheduler = new Scheduler(conf, species);
         scheduler.startToWork();
@@ -45,7 +46,9 @@ public class Main {
             System.exit(-1);
         }
         if(command.equals("book")) {
-            scheduleScrawlers(species);
+//            scheduleScrawlers(species);
+            ScrawlerTask bookTask = new ScrawlerTask(conf, new AmazonSpider(conf), species);
+            bookTask.run();
         } else if (command.equals("category")) {
             logger.info("Begin to fetch categorys of " + species.toString());
             long timeBegin = System.currentTimeMillis();

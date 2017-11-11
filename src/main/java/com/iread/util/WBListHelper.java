@@ -2,6 +2,7 @@ package com.iread.util;
 
 import com.iread.bean.BlackWhiteListType;
 import com.iread.bean.Category;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -33,6 +34,7 @@ public class WBListHelper {
                 bookBlackList.add(listType);
             }
         }
+        logger.info("cat1 whitelist inited, " + ArrayUtils.toString(categoryWhiteList));
         return true;
     }
 

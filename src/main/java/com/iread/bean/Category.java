@@ -150,7 +150,7 @@ public class Category extends Storable{
 
     @Override
     public int getMinSize() {
-        return 1000;
+        return 10240;
     }
 
     @Override

@@ -29,6 +29,9 @@ public class ScrawlerTask implements Runnable {
         this.species = species;
     }
 
+    /**
+     * 抓取book
+     */
     public void run() {
         try {
             logger.info("start round " + searchRounds);

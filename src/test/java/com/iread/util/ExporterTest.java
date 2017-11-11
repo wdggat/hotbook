@@ -7,10 +7,7 @@ import com.iread.bean.Species;
 import com.iread.conf.ConfMan;
 import com.iread.spider.AmazonSpider;
 import org.apache.log4j.PropertyConfigurator;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -22,6 +19,7 @@ import java.util.List;
 /**
  * Created by liuxiaolong on 16/10/11.
  */
+@Ignore
 public class ExporterTest {
     @BeforeClass
     public static void setUp() {

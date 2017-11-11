@@ -66,7 +66,7 @@ public class AmazonSpider extends Spider {
                                 catLevel3.setCat2name(catLevel2.getCat2name());
                                 catLevel3.setCat3name(catLevel3.getName());
                                 logger.debug("to get url of category : " + catLevel3);
-                                Document level3Doc = fetchDocument(catLevel3);
+                                Document level3Doc = fetchDocument(catLevel3, true);
                                 String squareSortUrl = AmazonBookParser.getSquareSortUrlFromDoc(level3Doc);
                                 if (squareSortUrl != null) {
                                     catLevel3.setUrl(squareSortUrl.startsWith(HOST) ? squareSortUrl : (HOST + squareSortUrl));
@@ -112,7 +112,7 @@ public class AmazonSpider extends Spider {
         ArrayList<Category> subCategorys = new ArrayList<Category>();
         if (rootCat.getType() == Category.TYPE_NORMAL) {
             logger.info("SubCat's url: " + rootCat.getName() + ", " + rootCat.getUrl());
-            Document document = fetchDocument(rootCat);
+            Document document = fetchDocument(rootCat, true);
             String squareSortUrl = AmazonBookParser.getSquareSortUrlFromDoc(document);
             squareSortUrl = squareSortUrl.contains(HOST) ? squareSortUrl : (HOST + squareSortUrl);
             rootCat.setUrl(squareSortUrl);
@@ -186,7 +186,7 @@ public class AmazonSpider extends Spider {
     public ArrayList<BookPreview> fetchBookPreviews(Category category, int page) throws IOException {
         ArrayList<BookPreview> bookPreviews = new ArrayList<BookPreview>();
         CategoryPage categoryPage = new CategoryPage(category, page);
-        Document document = fetchDocument(categoryPage);
+        Document document = fetchDocument(categoryPage, true);
         Elements bookPreviewEls = document.getElementsByAttributeValueStarting("id", "result_");
         int order = (page - 1) * conf.getAmazonBooknumPerSquareSortPage();
         for(Element bookPreviewEl : bookPreviewEls) {
@@ -240,20 +240,20 @@ public class AmazonSpider extends Spider {
         try {
             book = fetchBookNoretry(bookPreview);
         } catch (NullPointerException e) {
-            logger.error("fetch book failed: " + bookPreview.toJsonStr(), e);
-            logger.info("Del and try again, " + bookPreview.getStoreFilename());
-            FileUtils.forceDelete(new File(Spider.getCompPath(bookPreview)));
+            logger.error("fetch book failed, try again " + bookPreview.toJsonStr(), e);
+//            logger.info("Del and try again, " + bookPreview.getStoreFilename());
+//            FileUtils.forceDelete(new File(Spider.getCompPath(bookPreview)));
             book = fetchBookNoretry(bookPreview);
         }
         return book;
     }
 
     public Book fetchBookNoretry(BookPreview bookPreview) throws IOException {
-        Document document = fetchDocument(bookPreview);
+        Document document = fetchDocument(bookPreview, true);
         // searchRefused
         if (document == null) {
             sleep(60);
-            document = fetchDocument(bookPreview);
+            document = fetchDocument(bookPreview, true);
         }
         Book book = new Book();
         book.setSpecies(Species.AMAZON);

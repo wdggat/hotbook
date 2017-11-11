@@ -21,9 +21,16 @@ public class AmazonBookParser extends SpiderParser {
         return parseDate(dateStr);
     }
 
+    /**
+     *
+     * @param document
+     * @param flag  作者/译
+     * @return
+     */
     public static ArrayList<String> getAuthors(Document document, String flag) {
         ArrayList<String> authors = new ArrayList<String>();
-        Elements authorEls = document.getElementsByClass("author");
+        Element bylineEl = document.getElementById("byline");
+        Elements authorEls = bylineEl.getElementsByClass("author");
         for(Element authorEl : authorEls) {
             String author = authorEl.select("a").first().text();
             Element contributionEl = authorEl.getElementsByClass("contribution").first();
@@ -227,7 +234,7 @@ public class AmazonBookParser extends SpiderParser {
         ArrayList<Integer> starGroups = new ArrayList<Integer>();
         Element histogramEl = document.getElementById("histogramTable");
         for(Element histogramRow : histogramEl.getElementsByClass("a-histogram-row")) {
-            Element commentNumEl = histogramRow.getElementsByClass("a-nowrap").last();
+            Element commentNumEl = histogramRow.getElementsByClass("aok-nowrap").last();
             String star = StringUtils.isBlank(commentNumEl.text()) ? "0" : commentNumEl.text();
             starGroups.add(parseInt(star));
         }
@@ -236,19 +243,20 @@ public class AmazonBookParser extends SpiderParser {
 
     public static ArrayList<Comment> getComments(Document document) {
         ArrayList<Comment> comments = new ArrayList<Comment>();
-        Element parentEl = document.getElementById("revMH");
+        Element parentEl = document.getElementById("cm-cr-dp-review-list");
         if (parentEl == null) {
             return comments;
         }
-        for(Element commentEl : parentEl.getElementsByAttributeValueStarting("id", "rev-")) {
+        for(Element commentEl : parentEl.getElementsByAttributeValueStarting("id", "customer_review")) {
             Comment comment = new Comment();
             comment.setId(commentEl.id());
             Element iconEl = commentEl.getElementsByClass("a-icon-star").first();
-            String starS = StringUtils.substringBetween(iconEl.text(), "平均", ".0");
+//            String starS = StringUtils.substringBetween(iconEl.text(), "平均", "星");
+            String starS = StringUtils.substringBefore(iconEl.text(), ".0");
             comment.setStar(parseInt(starS));
-            Element titleEl = commentEl.getElementsByClass("a-icon-row").select("span").last();
+            Element titleEl = commentEl.getElementsByClass("review-title").first();
             comment.setTitle(titleEl.text());
-            Element commentatorEl = commentEl.getElementsByAttributeValueContaining("href", "profile.amazon").first();
+            Element commentatorEl = commentEl.getElementsByAttributeValueContaining("href", "/profile/amzn").first();
             if(commentatorEl == null) {
                 comment.setAuthor("");
             } else {
@@ -258,10 +266,10 @@ public class AmazonBookParser extends SpiderParser {
             Element dateEl = commentEl.getElementsMatchingOwnText(Pattern.compile("([0-9]+)年([0-9]+)月([0-9]+)日")).first();
             String dateStr = StringUtils.substringBetween(dateEl.toString(), "于", "</span>");
             comment.setDate(parseDate(dateStr.trim()));
-            Element revDataEl = commentEl.getElementsByAttributeValueStarting("id", "revData-").first();
-            String content = revDataEl.getElementsByClass("a-section").last().text();
+//            Element revDataEl = commentEl.getElementsByAttributeValueStarting("id", "revData-").first();
+            String content = commentEl.getElementsByClass("a-expander-content").first().text();
             comment.setContent(content);
-            Elements praiseEls = commentEl.getElementsByClass("cr-vote-buttons");
+            Elements praiseEls = commentEl.getElementsByClass("review-votes");
             if(!praiseEls.isEmpty()) {
                 String praiseS = StringUtils.substringBetween(praiseEls.text(), "", "个人发现此评论有用");
                 comment.setPraise(praiseS == null ? 0 : parseInt(praiseS));

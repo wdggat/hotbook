@@ -1,6 +1,7 @@
 package com.iread.util;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Map;
@@ -25,5 +26,13 @@ public class UrlUtilTest {
         String actual = UrlUtil.extractParamUrl(url, "url");
         System.out.println(url.length() + ", " + actual.length());
         Assert.assertEquals(expected, actual);
+    }
+
+    @Ignore
+    public void testBookInfo() {
+        String url = "https://www.amazon.cn/s/ref=lp_658495051_il_ti_stripbooks?rh=n%3A658390051%2Cn%3A%21658391051%2Cn%3A658393051%2Cn%3A658495051&ie=UTF8&qid=1509759353&lo=stripbooks";
+        HttpClientVM clientVM = new HttpClientVM();
+        String response = clientVM.get(url);
+        System.out.println(response);
     }
 }

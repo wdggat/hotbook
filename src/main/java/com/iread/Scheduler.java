@@ -8,6 +8,7 @@ import com.iread.spider.AmazonSpider;
 import com.iread.spider.Spider;
 import org.apache.log4j.Logger;
 
+@Deprecated
 public class Scheduler {
     private static Logger logger = Logger.getLogger(Scheduler.class);
     
