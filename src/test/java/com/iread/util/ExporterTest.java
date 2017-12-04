@@ -65,7 +65,7 @@ public class ExporterTest {
     }
 
     @Test
-    public void testExportBooks_paperBack() throws IOException, SQLException {
+    public void testExportBooks_paperBack() throws Exception {
         AmazonSpider amazonSpider = new AmazonSpider(new ConfMan());
         String url = "https://www.amazon.cn/%E9%AD%94%E9%AC%BC%E7%BB%8F%E6%B5%8E%E5%AD%A6%E7%B3%BB%E5%88%97-%E5%8F%B2%E8%92%82%E8%8A%AC%C2%B7%E5%88%97%E7%BB%B4%E7%89%B9/dp/B01KV0D9OW/ref=sr_1_3?s=books&ie=UTF8&qid=1474475789&sr=1-3";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 263, "ASIN_test", "TITLE_test_魔鬼经济学", "2016年4月", null, url, null, 10000f, 10f, 100);
@@ -81,7 +81,7 @@ public class ExporterTest {
     }
 
     @Test
-    public void testExportBooks_kindle() throws IOException, SQLException {
+    public void testExportBooks_kindle() throws Exception {
         AmazonSpider amazonSpider = new AmazonSpider(new ConfMan());
         String url = "https://www.amazon.cn/dp/B0151E1R06/ref=tmm_kin_swatch_0?_encoding=UTF8&qid=&sr=";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 263, "ASIN_test", "TITLE_test_超越智商", "2016年4月", url, null, null, 10000f, 10f, 100);

@@ -66,7 +66,7 @@ public class AmazonSpider extends Spider {
                                 catLevel3.setCat2name(catLevel2.getCat2name());
                                 catLevel3.setCat3name(catLevel3.getName());
                                 logger.debug("to get url of category : " + catLevel3);
-                                Document level3Doc = fetchDocument(catLevel3, true);
+                                Document level3Doc = fetchDocument(catLevel3, true).getDocument();
                                 String squareSortUrl = AmazonBookParser.getSquareSortUrlFromDoc(level3Doc);
                                 if (squareSortUrl != null) {
                                     catLevel3.setUrl(squareSortUrl.startsWith(HOST) ? squareSortUrl : (HOST + squareSortUrl));
@@ -112,7 +112,7 @@ public class AmazonSpider extends Spider {
         ArrayList<Category> subCategorys = new ArrayList<Category>();
         if (rootCat.getType() == Category.TYPE_NORMAL) {
             logger.info("SubCat's url: " + rootCat.getName() + ", " + rootCat.getUrl());
-            Document document = fetchDocument(rootCat, true);
+            Document document = fetchDocument(rootCat, true).getDocument();
             String squareSortUrl = AmazonBookParser.getSquareSortUrlFromDoc(document);
             squareSortUrl = squareSortUrl.contains(HOST) ? squareSortUrl : (HOST + squareSortUrl);
             rootCat.setUrl(squareSortUrl);
@@ -186,7 +186,7 @@ public class AmazonSpider extends Spider {
     public ArrayList<BookPreview> fetchBookPreviews(Category category, int page) throws IOException {
         ArrayList<BookPreview> bookPreviews = new ArrayList<BookPreview>();
         CategoryPage categoryPage = new CategoryPage(category, page);
-        Document document = fetchDocument(categoryPage, true);
+        Document document = fetchDocument(categoryPage, true).getDocument();
         Elements bookPreviewEls = document.getElementsByAttributeValueStarting("id", "result_");
         int order = (page - 1) * conf.getAmazonBooknumPerSquareSortPage();
         for(Element bookPreviewEl : bookPreviewEls) {
@@ -235,25 +235,35 @@ public class AmazonSpider extends Spider {
         return bookPreviews;
     }
 
-    public Book fetchBook(BookPreview bookPreview) throws IOException {
+    public Book fetchBook(BookPreview bookPreview) throws Exception {
         Book book = null;
         try {
             book = fetchBookNoretry(bookPreview);
-        } catch (NullPointerException e) {
-            logger.error("fetch book failed, try again " + bookPreview.toJsonStr(), e);
-//            logger.info("Del and try again, " + bookPreview.getStoreFilename());
-//            FileUtils.forceDelete(new File(Spider.getCompPath(bookPreview)));
-            book = fetchBookNoretry(bookPreview);
+        } catch (Exception e) {
+            logger.error("fetch book failed, " + bookPreview.toJsonStr(), e);
         }
         return book;
     }
 
-    public Book fetchBookNoretry(BookPreview bookPreview) throws IOException {
-        Document document = fetchDocument(bookPreview, true);
-        // searchRefused
-        if (document == null) {
-            sleep(60);
-            document = fetchDocument(bookPreview, true);
+    public Book fetchBookNoretry(BookPreview bookPreview) throws Exception {
+        FetchResponse response = fetchDocument(bookPreview, true);
+        Document document = null;
+        switch (response.getRetCode()) {
+            case REFUSED:
+                sleep(60);
+                response = fetchDocument(bookPreview, true);
+                if (response.getRetCode().equals(FetchResponse.RetCode.OK)) {
+                    document = response.getDocument();
+                    break;
+                } else {
+                    logger.error("fetch failed, " + response.getRetCode().name() + ", escape a book: " + bookPreview.toJsonStr());
+                    return null;
+                }
+            case OK:
+                document = response.getDocument();
+                break;
+            case NONEXIST:
+                return null;
         }
         Book book = new Book();
         book.setSpecies(Species.AMAZON);
@@ -282,7 +292,7 @@ public class AmazonSpider extends Spider {
             for(Element liEl : bucketEl.select("li")) {
                 String text = liEl.text().trim();
                 if(text.startsWith("文件大小")) {
-                    String size = text.replaceAll("(文件大小|:|：|KB)", "");
+                    String size = text.replaceAll("(文件大小|:|：|KB|\\.0)", "");
                     book.setSize(Integer.parseInt(size.trim()));
                 } else if(text.startsWith("纸书页数")) {
                     String page = text.replaceAll("(纸书页数|:|：)", "");
@@ -322,7 +332,11 @@ public class AmazonSpider extends Spider {
                     book.setLanguage(language.trim());
                 } else if (text.startsWith("开本:")) {
                     String size = text.replaceAll("(开本:|开)", "").trim();
-                    book.setSize(Integer.parseInt(size));
+                    if (StringUtils.contains(size, "x")) {
+                        book.setSize(0);
+                    } else {
+                        book.setSize(Integer.parseInt(size));
+                    }
                 } else if (text.startsWith("ISBN:")) {
                     book.setIsbn(text.replaceFirst("ISBN:", "").trim());
                 } else if (text.startsWith("条形码:")) {
@@ -361,7 +375,7 @@ public class AmazonSpider extends Spider {
         book.setRankCats(AmazonBookParser.getRankCats(bucketEl));
 
         book.setStarGroups(AmazonBookParser.getStarGroups(document));
-        book.setComments(AmazonBookParser.getComments(document));
+//        book.setComments(AmazonBookParser.getComments(document));
         return book;
     }
 }

@@ -1,9 +1,6 @@
 package com.iread.spider;
 
-import com.iread.bean.Book;
-import com.iread.bean.BookPreview;
-import com.iread.bean.Category;
-import com.iread.bean.Storable;
+import com.iread.bean.*;
 import com.iread.conf.ConfMan;
 import com.iread.util.GzipUtil;
 import com.iread.util.HttpClientVM;
@@ -32,7 +29,7 @@ public abstract class Spider {
 
     public abstract ArrayList<Category> fetchCategorys();
     public abstract ArrayList<BookPreview> fetchBookPreviews(Category category);
-    public abstract Book fetchBook(BookPreview bookPreview) throws IOException;
+    public abstract Book fetchBook(BookPreview bookPreview) throws Exception;
 
     protected static Document fetchDocument(String url) {
         String content = clientVM.get(url);
@@ -46,11 +43,11 @@ public abstract class Spider {
      * @return
      * @throws IOException
      */
-    public static Document fetchDocument(Storable storable, boolean delOldFile) throws IOException {
-        return fetchDocumentCompress(storable, true);
+    public static FetchResponse fetchDocument(Storable storable, boolean delOldFile) throws IOException {
+        return fetchDocumentCompress(storable, delOldFile);
     }
 
-    private static Document fetchDocumentCompress(Storable storable, Boolean delOldFile) throws IOException {
+    private static FetchResponse fetchDocumentCompress(Storable storable, Boolean delOldFile) throws IOException {
         String decomPath = conf.getWarehouse(storable.getSpecies()) + "/" + storable.getStoreFilename();
         String comPath = decomPath + GzipUtil.EXT;
         File comF = new File(comPath);
@@ -58,20 +55,23 @@ public abstract class Spider {
         // 文件不存在或已过期
         if(!comF.exists() || (expired(comF) && delOldFile) || isFileEmpty(comF)) {
             html = clientVM.get(storable.getUrl());
+            if (StringUtils.contains(html, "您输入的网址在我们的网站上无法正常显示网页")) {
+                return new FetchResponse(FetchResponse.RetCode.NONEXIST, null);
+            }
             File decomF = new File(decomPath);
             if (html.length() > storable.getMinSize()) {
                 FileUtils.write(decomF, html, false);
             }
             if(decomF.length() < storable.getMinSize()) {
-                logger.fatal("url request failed, file.length()=" + decomF.length() + ", file empty, " + storable.toString());
+                logger.fatal("url request failed, html.length()=" + html.length() + ", file empty, " + storable.toString());
                 logger.fatal(html);
-                return null;
+                return new FetchResponse(FetchResponse.RetCode.REFUSED, null);
             }
             GzipUtil.compress(decomF);
         } else {
             html = GzipUtil.readCompress(comF);
         }
-        return Jsoup.parse(html);
+        return new FetchResponse(FetchResponse.RetCode.OK, Jsoup.parse(html));
     }
 
     public static String getCompPath(Storable storable) {
@@ -79,7 +79,7 @@ public abstract class Spider {
         return decomPath + GzipUtil.EXT;
     }
 
-    private static Document fetchDocumentDecompress(Storable storable) throws IOException {
+/*    private static Document fetchDocumentDecompress(Storable storable) throws IOException {
         String path = conf.getWarehouse(storable.getSpecies()) + "/" + storable.getStoreFilename();
         File storeFile = new File(path);
         // 文件不存在或已过期
@@ -89,7 +89,7 @@ public abstract class Spider {
             return Jsoup.parse(html);
         }
         return Jsoup.parse(storeFile, "UTF-8");
-    }
+    }*/
 
     protected static boolean expired(File file) {
         return (System.currentTimeMillis() - file.lastModified()) / 86400000 >= conf.getShelflife();
@@ -105,7 +105,7 @@ public abstract class Spider {
     }
 
     private static boolean isFileEmpty(File file) {
-        return FileUtils.sizeOf(file) < 10240;
+        return FileUtils.sizeOf(file) < 1024;
     }
 
 }

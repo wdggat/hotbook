@@ -30,12 +30,14 @@ public class AmazonBookParser extends SpiderParser {
     public static ArrayList<String> getAuthors(Document document, String flag) {
         ArrayList<String> authors = new ArrayList<String>();
         Element bylineEl = document.getElementById("byline");
-        Elements authorEls = bylineEl.getElementsByClass("author");
-        for(Element authorEl : authorEls) {
-            String author = authorEl.select("a").first().text();
-            Element contributionEl = authorEl.getElementsByClass("contribution").first();
-            if(contributionEl.toString().contains(flag)) {
-                authors.add(author);
+        if (bylineEl != null) {
+            Elements authorEls = bylineEl.getElementsByClass("author");
+            for(Element authorEl : authorEls) {
+                String author = authorEl.select("a").first().text();
+                Element contributionEl = authorEl.getElementsByClass("contribution").first();
+                if(contributionEl.toString().contains(flag)) {
+                    authors.add(author);
+                }
             }
         }
         return authors;
@@ -158,9 +160,14 @@ public class AmazonBookParser extends SpiderParser {
             buyTogether.get(i - 1).setAsin(asin);
             buyTogether.get(i - 1).setUrl(url);
             Elements spanEls = labelEl.select("span");
-            buyTogether.get(i - 1).setPrice(priceCast(spanEls.get(2).text()));
-            buyTogether.get(i - 1).setWrapType(WrapType.getFromName(spanEls.get(1).text()));
-            buyTogether.get(i - 1).setAuthor(authorClean(spanEls.get(0).text()));
+            if (spanEls.size() >= 3) {
+                buyTogether.get(i - 1).setPrice(priceCast(spanEls.get(2).text()));
+                buyTogether.get(i - 1).setWrapType(WrapType.getFromName(spanEls.get(1).text()));
+                buyTogether.get(i - 1).setAuthor(authorClean(spanEls.get(0).text()));
+            } else {
+                buyTogether.get(i - 1).setPrice(priceCast(spanEls.get(1).text()));
+                buyTogether.get(i - 1).setWrapType(WrapType.getFromName(spanEls.get(0).text()));
+            }
         }
         return buyTogether;
     }
@@ -241,7 +248,13 @@ public class AmazonBookParser extends SpiderParser {
         return starGroups;
     }
 
-    public static ArrayList<Comment> getComments(Document document) {
+    /**
+     * 先不取comment吧 容易出错的先不拿
+     * @param document
+     * @return
+     */
+    @Deprecated
+    private static ArrayList<Comment> getComments(Document document) {
         ArrayList<Comment> comments = new ArrayList<Comment>();
         Element parentEl = document.getElementById("cm-cr-dp-review-list");
         if (parentEl == null) {

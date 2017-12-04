@@ -45,8 +45,11 @@ public class ScrawlerTask implements Runnable {
                 ArrayList<Book> books = new ArrayList<Book>();
                 ArrayList<BookPreview> previews = spider.fetchBookPreviews(category);
                 for (BookPreview bookPreview : previews) {
-                    logger.debug("begin to get book of : " + bookPreview.toJsonStr());
+//                    logger.debug("begin to get book of : " + bookPreview.toJsonStr());
                     Book book = spider.fetchBook(bookPreview);
+                    if (book == null) {
+                        continue;
+                    }
                     book.setCategory(category);
                     books.add(book);
                     logger.info(book.getSpecies() + " " + category.getCatFullName() + " fetched book : " + book.getTitle());
@@ -58,7 +61,6 @@ public class ScrawlerTask implements Runnable {
                 }
                 Exporter.exportBooks(books);
                 logger.info(category.getSpecies() + " " + category.getCatFullName() + " exported books num : " + books.size());
-                return;
             }
         } catch (Throwable e) {
             logger.error("Something wrong happens during spider running:",

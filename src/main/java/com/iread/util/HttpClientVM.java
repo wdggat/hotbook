@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,9 +34,7 @@ public class HttpClientVM {
     private Logger logger = Logger.getLogger(HttpClientVM.class);
     public static HttpClientVM clientVM;
 
-    private final static String USER_AGENT = "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; "
-            + "Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729;"
-            + " Media Center PC 6.0; InfoPath.3; CIBA)";
+    private final static String USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36";
     private DefaultHttpClient client;
     private HttpContext currentContext;
 
@@ -72,6 +71,17 @@ public class HttpClientVM {
                 new ThreadSafeClientConnManager(schemeRegistry);
         manager.setMaxTotal(200);
         manager.setDefaultMaxPerRoute(20);
+
+        Map<String, String> commonHeaders = new HashMap<String, String>();
+        params.setParameter("Pragma", "no-cache");
+        params.setParameter("User-Agent", USER_AGENT);
+        params.setParameter("Host", "www.amazon.cn");
+        params.setParameter("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
+        params.setParameter("Accept-Encoding", "gzip, deflate, br");
+        params.setParameter("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8");
+        params.setParameter("Cache-Control", "no-cache");
+        params.setParameter("Connection", "keep-alive");
+        params.setParameter("Upgrade-Insecure-Requests", "1");
 
         client = new DefaultHttpClient(manager, params);
     }

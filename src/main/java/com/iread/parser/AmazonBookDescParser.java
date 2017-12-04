@@ -13,7 +13,7 @@ import java.io.IOException;
  */
 public class AmazonBookDescParser {
     public static void parseBookDesc(BookDescription desc) throws IOException {
-        Document document = Spider.fetchDocument(desc, false);
+        Document document = Spider.fetchDocument(desc, false).getDocument();
         Element contents = document.getElementById("s_contents");
         for (Element contentEl : contents.getElementsByClass("s-content")) {
             String h3 = contentEl.child(0).text();

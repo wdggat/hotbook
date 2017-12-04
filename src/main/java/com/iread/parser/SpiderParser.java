@@ -57,6 +57,6 @@ public class SpiderParser {
         if (StringUtils.isBlank(text)) {
             return 0;
         }
-        return Integer.parseInt(text.replace(",", "").trim());
+        return Integer.parseInt(StringUtils.replaceChars(text, "[,%]", "").trim());
     }
 }

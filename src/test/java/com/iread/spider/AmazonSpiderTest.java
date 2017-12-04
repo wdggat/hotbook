@@ -74,7 +74,7 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBook_paperback() throws IOException {
+    public void testFetchBook_paperback() throws Exception {
         String url = "https://www.amazon.cn/%E9%AD%94%E9%AC%BC%E7%BB%8F%E6%B5%8E%E5%AD%A6%E7%B3%BB%E5%88%97-%E5%8F%B2%E8%92%82%E8%8A%AC%C2%B7%E5%88%97%E7%BB%B4%E7%89%B9/dp/B01KV0D9OW/ref=sr_1_3?s=books&ie=UTF8&qid=1474475789&sr=1-3";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 263, "ASIN_test", "TITLE_test_魔鬼经济学", "2016年4月", null, url, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBook(bookPreview);
@@ -86,7 +86,7 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBook_paperback_noComment() throws IOException {
+    public void testFetchBook_paperback_noComment() throws Exception {
         String url = "https://www.amazon.cn/%E6%BA%90%E6%B0%8F%E7%89%A9%E8%AF%AD-%E7%B4%AB%E5%BC%8F%E9%83%A8/dp/B013JFQFF6/ref=lp_2130608051_1_2_twi_har_2/454-1759273-4201302?s=books&ie=UTF8&qid=1476546480&sr=1-2";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "ASIN_test", "TITLE_test_源氏物语", "2016年4月", null, url, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBook(bookPreview);
@@ -98,7 +98,7 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBook_paperback_noSto() throws IOException {
+    public void testFetchBook_paperback_noSto() throws Exception {
         String url = "https://www.amazon.cn/%E7%BA%B8%E9%95%87-%E7%BA%A6%E7%BF%B0%E2%80%A2%E6%A0%BC%E6%9E%97/dp/B005V7H898/ref=sr_1_793_twi_pap_2?s=books&ie=UTF8&qid=1479055570&sr=1-793";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "ASIN_test", "TITLE_test_纸镇", "2016年4月", null, url, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBook(bookPreview);
@@ -110,7 +110,7 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBook_paperback_alsobuyNoprice() throws IOException {
+    public void testFetchBook_paperback_alsobuyNoprice() throws Exception {
         String url = "https://www.amazon.cn/%E8%8B%8F%E8%8F%B2%E7%9A%84%E4%B8%96%E7%95%8C-%E4%B9%94%E6%96%AF%E5%9D%A6%E2%80%A2%E8%B4%BE%E5%BE%B7/dp/B0011F5QPC/ref=lp_2130608051_1_4_twi_pap_1/454-1759273-4201302?s=books&ie=UTF8&qid=1476546480&sr=1-4";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "ASIN_test", "TITLE_test_苏菲的世界", "2016年4月", null, url, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBook(bookPreview);
@@ -122,7 +122,7 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBook_paperback_nobuytogether() throws IOException {
+    public void testFetchBook_paperback_nobuytogether() throws Exception {
         String url = "https://www.amazon.cn/Fathers-and-Children-Turgenev-Ivan/dp/0679405364/ref=lp_2130608051_1_41_twi_har_2/454-1759273-4201302?s=books&ie=UTF8&qid=1476546480&sr=1-41";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "ASIN_test", "TITLE_test_父与子", "2016年4月", null, url, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBook(bookPreview);
@@ -132,7 +132,7 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBook_paperback_commentnull() throws IOException {
+    public void testFetchBook_paperback_commentnull() throws Exception {
         String url = "https://www.amazon.cn/%E9%A9%AC%E5%85%8B%C2%B7%E5%90%90%E6%B8%A9%E7%9F%AD%E7%AF%87%E5%B0%8F%E8%AF%B4%E7%B2%BE%E9%80%89-%E9%A9%AC%E5%85%8B%C2%B7%E5%90%90%E6%B8%A9/dp/B00K6WPILS/ref=sr_1_180_twi_kin_1?s=books&ie=UTF8&qid=1478104375&sr=1-180";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "ASIN_test", "TITLE_test_我是猫", "2016年4月", null, url, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBook(bookPreview);
@@ -142,7 +142,7 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBook_paperback_alsobuynull() throws IOException {
+    public void testFetchBook_paperback_alsobuynull() throws Exception {
         String url = "https://www.amazon.cn/%E5%82%B2%E6%85%A2%E4%B8%8E%E5%81%8F%E8%A7%81-%E7%AE%80%C2%B7%E5%A5%A5%E6%96%AF%E6%B1%80/dp/B01HERFL1E/ref=sr_1_223_twi_pap_1?s=books&ie=UTF8&qid=1478104377&sr=1-223";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "ASIN_test", "TITLE_test_傲慢与偏见", "2016年4月", null, url, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBook(bookPreview);
@@ -152,7 +152,7 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBook_paperback_noimg() throws IOException {
+    public void testFetchBook_paperback_noimg() throws Exception {
         String url = "https://www.amazon.cn/%E6%B5%81%E5%8A%A8%E7%9A%84%E7%9B%9B%E5%AE%B4-%E6%B5%B7%E6%98%8E%E5%A8%81-%E6%B5%B7%E6%98%8E%E5%A8%81/dp/B01G9PVB20/ref=sr_1_316_twi_pap_1?s=books&ie=UTF8&qid=1478104380&sr=1-316";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "ASIN_test", "TITLE_test_流动的盛宴", "2016年4月", null, url, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBookNoretry(bookPreview);
@@ -162,7 +162,7 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBook_paperback_rankAllnull() throws IOException {
+    public void testFetchBook_paperback_rankAllnull() throws Exception {
         String url = "https://www.amazon.cn/Oliver-Twist-Dickens-Charles/dp/7532751295/ref=sr_1_304_twi_pap_2?s=books&ie=UTF8&qid=1478104380&sr=1-304";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "ASIN_test", "TITLE_test_雾都孤儿", "2016年4月", null, url, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBookNoretry(bookPreview);
@@ -172,7 +172,7 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBook_paperback_commentnull2() throws IOException {
+    public void testFetchBook_paperback_commentnull2() throws Exception {
         String url = "https://www.amazon.cn/%E6%B5%81%E6%98%9F%E4%B9%8B%E7%BB%8A-%E4%B8%9C%E9%87%8E%E5%9C%AD%E5%90%BE/dp/B01GDJZSLM/ref=lp_658495051_1_39_twi_har_2/455-4020582-1799843?s=books&ie=UTF8&qid=1479055546&sr=1-39";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "ASIN_test", "TITLE_test_流星之绊", "2016年4月", null, url, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBookNoretry(bookPreview);
@@ -182,7 +182,7 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBook_kindle_imgsnull() throws IOException {
+    public void testFetchBook_kindle_imgsnull() throws Exception {
         String url = "https://www.amazon.cn/%E9%A9%AC%E5%85%8B%C2%B7%E5%90%90%E6%B8%A9%E7%9F%AD%E7%AF%87%E5%B0%8F%E8%AF%B4%E7%B2%BE%E9%80%89-%E9%A9%AC%E5%85%8B%C2%B7%E5%90%90%E6%B8%A9/dp/B00K6WPILS/ref=sr_1_180_twi_kin_1?s=books&ie=UTF8&qid=1478104375&sr=1-180";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "ASIN_test", "TITLE_test_马克·吐温短篇小说精选", "2016年4月", url, null, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBook(bookPreview);
@@ -192,7 +192,7 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBook_kindle() throws IOException {
+    public void testFetchBook_kindle() throws Exception {
         String url = "https://www.amazon.cn/dp/B0151E1R06/ref=tmm_kin_swatch_0?_encoding=UTF8&qid=&sr=";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 263, "ASIN_test", "TITLE_test_超越智商", "2016年4月", url, null, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBook(bookPreview);
@@ -202,7 +202,7 @@ public class AmazonSpiderTest {
     }
 
     @Test
-    public void testFetchBook_exception_20171108() throws IOException {
+    public void testFetchBook_exception_20171108() throws Exception {
         String url = "https://www.amazon.cn/%E5%8C%97%E6%B4%8B%E5%A4%9C%E8%A1%8C%E8%AE%B0-%E9%87%91%E9%86%89/dp/B0766DYZ2F/ref=lp_658495051_1_1_twi_pap_1/460-7445851-5211369?s=books&ie=UTF8&qid=1509938924&sr=1-1";
         BookPreview bookPreview = new BookPreview(Species.AMAZON, 8198, "B0766DYZ2F", "北洋夜行记(亚马逊独家亲笔签名版)(附语音名片)", "2016年4月", null, url, null, 10000f, 10f, 100);
         Book book = amazonSpider.fetchBookNoretry(bookPreview);
