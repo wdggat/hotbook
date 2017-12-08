@@ -103,6 +103,13 @@ CREATE TABLE IF NOT EXISTS wblist (
   primary key(`type`, blackorwhite, value)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='类目书名黑白名单';
 
+CREATE TABLE IF NOT EXISTS published (
+  isbn varchar(100),
+  `type` int COMMENT '0 正常发布, 1 pass',
+  primary key (isbn)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
 --------------------------
 --insert into wblist (`type`, blackorwhite, value) values(1, 1, 'Kindle'),(1, 1, '小说'),(1, 1, '文学'),(1, 1, '传记'),(1, 1, '社会科学'),(1, 1, '哲学与宗教'),(1, 1, '政治与军事'),(1, 1, '心理学'),(1, 1, '历史'),(1, 1, '国学'),(1, 1, '经济管理'),(1,1,'励志与成功'),(1,1,'科技'),(1,1,'科学与自然'),(1,1,'计算机与互联网'),(1,1,'旅游与地图'),(1,1,'进口原版');
 insert into wblist (`type`, blackorwhite, value) values(1, 1, '传记'),(1, 1, '社会科学'),(1, 1, '哲学与宗教'),(1, 1, '政治与军事'),(1, 1, '心理学'),(1, 1, '历史'),(1, 1, '国学'),(1, 1, '经济管理'),(1,1,'励志与成功'),(1,1,'科技'),(1,1,'科学与自然'),(1,1,'计算机与互联网'),(1,1,'旅游与地图'),(1,1,'进口原版');
+

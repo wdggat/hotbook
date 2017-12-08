@@ -55,6 +55,10 @@ public class ConfMan {
 		return properties.getProperty("warehouse") + "/" + species.toString();
 	}
 
+	public String getUsedDir() {
+		return properties.getProperty("warehouse") + "/" + "used/";
+	}
+
     public int getShelflife() {
         return Integer.parseInt(properties.getProperty("shelflife"));
     }

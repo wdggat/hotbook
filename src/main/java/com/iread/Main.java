@@ -1,8 +1,10 @@
 package com.iread;
 
+import com.iread.bean.Book;
 import com.iread.bean.Category;
 import com.iread.bean.Species;
 import com.iread.conf.ConfMan;
+import com.iread.selector.Selector;
 import com.iread.spider.AmazonSpider;
 import com.iread.spider.Spider;
 import com.iread.util.Exporter;
@@ -63,6 +65,11 @@ public class Main {
                 logger.error("Failed to export categorys to db. ", e);
                 return;
             }
+        } else if (command.equals("select")) {
+            Selector selector = new Selector();
+            Book book = selector.selectABook(Species.AMAZON);
+            selector.dumpToFile(book, conf.getUsedDir());
+            logger.info("picked a book, " + book.toJsonStr());
         } else {
             printHelp();
         }
