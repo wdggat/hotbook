@@ -7,6 +7,7 @@ import com.iread.bean.WrapType;
 import com.iread.util.MysqlManager;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.util.HttpUtils;
@@ -46,15 +47,15 @@ public class Selector {
                 Calendar c = Calendar.getInstance();
                 c.setTime(onloadDate);
                 book.setOnloadDate(c);
-                book.setAuthor(toList(rs.getString("author")));
-                book.setTranslator(toList(rs.getString("translator")));
+                book.setAuthor(toList(rs.getString("author"), ","));
+                book.setTranslator(toList(rs.getString("translator"), ","));
                 book.setStar(rs.getDouble("star"));
                 book.setCommentNum(rs.getInt("commentNum"));
                 book.setSeller(rs.getString("seller"));
                 book.setPrice(rs.getFloat("price"));
                 book.setDescription(rs.getString("description"));
                 book.setPosterUrl(rs.getString("posterUrl"));
-                book.setImgUrls(toList(rs.getString("imgUrls")));
+                book.setImgUrls(toList(rs.getString("imgUrls"), "jpg,"));
                 book.setPublisher(rs.getString("publisher"));
                 book.setPageNum(rs.getInt("pagenum"));
                 book.setLanguage(rs.getString("language"));
@@ -98,14 +99,19 @@ public class Selector {
         lines.add("PREFACE: " + book.getPreface());
         lines.add("DIGEST: " + book.getDigest());
         try {
+            final int TIMEOUT = 20 * 1000;
             String dirname = usedDir + "/" + book.getAsin() + "_" + book.getTitle();
             String detailsFilepath = dirname + "/" + book.getAsin() + "_" + book.getTitle() + ".txt";
             FileUtils.writeLines(new File(detailsFilepath), lines);
-            String postalFilepath = book.getAsin() + "_" + book.getTitle() + "_postal.jpg";
-            FileUtils.copyURLToFile(new URL(book.getPosterUrl()), new File(postalFilepath));
+            String postalFilepath = usedDir + "/" + book.getAsin() + "_" + book.getTitle() + "_postal.jpg";
+            if (StringUtils.isNotBlank(book.getPosterUrl())) {
+                logger.info("got poster: " + book.getPosterUrl() + ", dest: " + postalFilepath);
+                FileUtils.copyURLToFile(new URL(book.getPosterUrl()), new File(postalFilepath), TIMEOUT, TIMEOUT);
+            }
             for (int i = 0; i < book.getImgUrls().size(); i++) {
-                String jpgFilepath = book.getAsin() + "_" + book.getTitle() + "_cover_" + i + ".jpg";
-                FileUtils.copyURLToFile(new URL(book.getImgUrls().get(i)), new File(jpgFilepath));
+                String jpgFilepath = dirname + "/" + book.getAsin() + "_" + book.getTitle() + "_cover_" + i + ".jpg";
+                logger.info("got a pic: " + book.getImgUrls().get(i) + ", dest: " + jpgFilepath);
+                FileUtils.copyURLToFile(new URL(book.getImgUrls().get(i)), new File(jpgFilepath), TIMEOUT, TIMEOUT);
             }
         } catch (IOException e) {
             logger.fatal("Error dump book to dir, " + book.toJsonStr(), e);
@@ -114,9 +120,9 @@ public class Selector {
         return true;
     }
 
-    private ArrayList<String> toList(String src) {
+    private ArrayList<String> toList(String src, String sep) {
         ArrayList<String> ret = new ArrayList<String>();
-        CollectionUtils.addAll(ret, src.split(","));
+        CollectionUtils.addAll(ret, src.split(sep));
         return ret;
     }
 
