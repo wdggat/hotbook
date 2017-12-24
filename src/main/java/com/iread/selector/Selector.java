@@ -35,7 +35,7 @@ public class Selector {
         MysqlManager mysqlManager = MysqlManager.getInstance();
         try{
             Connection conn = mysqlManager.getConnection();
-            String sql = "select * from book where commentNum > 20 and isbn not in (select isbn from published) order by star desc limit 5;";
+            String sql = "select * from book where commentNum > 20 and asin not in (select asin from published) order by star desc limit 5;";
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
             Book book = new Book();
